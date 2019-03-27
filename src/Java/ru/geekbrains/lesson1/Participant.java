@@ -1,4 +1,16 @@
 package Java.ru.geekbrains.lesson1;
 
-public class Participant {
+
+/**
+ * Интерфейс - участник соревнований
+ */
+public interface Participant {
+
+    boolean isOnDistance();
+
+    void run(int distance);
+
+    void jump(int height);
+
+    void swim(int distance);
 }

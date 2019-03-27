@@ -1,4 +1,12 @@
 package Java.ru.geekbrains.lesson1.course;
 
-public class Obstacle {
+
+import Java.ru.geekbrains.lesson1.Participant;
+
+/**
+ * Класс абстрактное препятствие
+ */
+public abstract class Obstacle {
+
+    public abstract void doIt(Participant participant);
 }
