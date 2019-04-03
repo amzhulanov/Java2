@@ -7,7 +7,6 @@ import static Java.ru.geekbrains.lesson2.EditArray.checkNumber;
 import static Java.ru.geekbrains.lesson2.EditArray.readArray;
 import static Java.ru.geekbrains.lesson2.EditArray.writeArray;
 
-
 public class CalcApplication {
 
     public static void main(String[] args) throws MyArraySizeException, MyArrayDataException {
