@@ -34,7 +34,7 @@ public class CalcApplication {
         } catch  (NumberFormatException ex) {
             System.out.println("Ошибка преобразования числа " + ex+". Программа завершает свою работу.");
         }catch (InputMismatchException ex){
-            System.out.println("Введено неверное число. Программа завершает свою работу.");
+            System.out.println("Введено неверное число, будьте аккуратнее. Программа завершает свою работу.");
         }catch (IndexOutOfBoundsException ex){
             throw new MyArraySizeException("Вы нарушили правила. Размерность массива ограничена 4х4. Вы указали " + numMassiv+". Программа завершает свою работу.");
         }
