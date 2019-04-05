@@ -5,7 +5,5 @@ public class MyArraySizeException extends Exception {
         super(message);
     }
 
-    public MyArraySizeException (String message,Throwable cause){
-        super(message,cause);
-    }
+
 }

@@ -6,21 +6,21 @@ public class ProcessingArray {
     //при нахождении символа срабатывает исключение MyArrayDataException
     //при размерности не равной 4 срабатывает исключение MyArraySizeException
     public static void checkCharacterSumArray(String myArray[][]) throws MyArraySizeException, MyArrayDataException  {
-        int positionX = 0;
-        int positionY = 0;
+        int positionColumn = 0;
+        int positionRow = 0;
         int sum=0;
 
         if (myArray.length!=4){
             throw new MyArraySizeException(String.format("Размерность массива ограничена 4х4. Длина вашего массива %s.", myArray.length));
         }
         try{
-            for ( positionX = 0; positionX <4 ; positionX++) {
-                for ( positionY = 0; positionY <4 ; positionY++) {
-                    sum=sum+Integer.valueOf(myArray[positionX][positionY]);
+            for ( positionRow = 0; positionRow <4 ; positionRow++) {
+                for (  positionColumn= 0; positionColumn <4 ; positionColumn++) {
+                    sum=sum+Integer.valueOf(myArray[positionRow][positionColumn]);
                 }
             }
         }catch (NumberFormatException ex) {
-            throw new MyArrayDataException(String.format("В строке %s и столбце %s найден символ, отличный от числа. Программа завершает свою работу.",positionX+1,positionY+1));
+            throw new MyArrayDataException("Найден символ, отличный от числа.",ex,positionRow+1,positionColumn+1);
         }
         System.out.println("Сумма ="+sum);
     }
