@@ -19,15 +19,9 @@ public class UniqueWords {
         //создаю массив для хранения пары слово-количество
         HashMap<String, Integer> calcWords = new HashMap<String, Integer>();
 
-        //заполняю массив парой "уникальное слово"-"0 повторений"
+        //заполняю массив парой "уникальное слово"-"количество повторений"
         for (String nextItem : arrWords) {
-            calcWords.put(nextItem, 0);
-        }
-        //перебираю каждое слово в первом массиве и добавляю кол-во в "парный массив"
-        int count = 0;
-        for (String curWords : arrWords) {
-            count = calcWords.get(curWords);//выгружаю текущее количество повторов
-            calcWords.put(curWords, count++);//если повторов 0, то это слово встретилось впервые и ставлю 1, иначе увеличиваю счётчик и записываю в HashMap
+            calcWords.merge(nextItem, 1, Integer::sum);
         }
         return calcWords;
     }
