@@ -5,6 +5,7 @@ package Java.ru.geekbrains.lesson1;
  * Интерфейс - участник соревнований
  */
 public interface Participant {
+    String getParticipantName();
 
     boolean isOnDistance();
 
@@ -13,4 +14,6 @@ public interface Participant {
     void jump(int height);
 
     void swim(int distance);
+
+
 }
