@@ -4,13 +4,13 @@ import javax.swing.*;
 
 public class Chat {
 
-    private static MainWindow mainWindow;
+    private static ViewWindow viewWindow;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                mainWindow = new MainWindow();
+                viewWindow = new ViewWindow();
             }
         });
     }
