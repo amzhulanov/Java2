@@ -5,11 +5,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import static Java.ru.geekbrains.lesson4.HomeWork4.ChatController.sendText;
-
 public class ViewWindow extends JFrame {
-    private static JTextField message = new JTextField();
-    public static DefaultListModel<String> textArea = new DefaultListModel<String>();
+    private JTextField message = new JTextField();
+    private static DefaultListModel<String> textArea = new DefaultListModel<String>();
 
     public ViewWindow() {
         setTitle("Chat");
@@ -22,7 +20,9 @@ public class ViewWindow extends JFrame {
         ActionListener actionListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-                sendText(message.getText().trim());
+                if (message.getText().trim().length() > 0) {
+                    textArea.add(textArea.getSize(), message.getText().trim() + "\n");
+                }
                 validate();
                 message.setText("");
             }
