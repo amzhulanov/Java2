@@ -2,6 +2,7 @@ package Java.ru.geekbrains.lesson5;
 
 
 import java.util.Arrays;
+
 import static java.lang.Math.*;
 
 public class OneThread {
