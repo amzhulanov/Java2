@@ -11,8 +11,6 @@ public class CalcSpeed {
         System.out.println(String.format("Обработка массива одним потоком длилась - %d ms", speedCalc()));
         setDefaultValue();
         System.out.println(String.format("Обработка массива двумя потоками длилась - %d ms", speedMultiThreading()));
-
-
     }
 
 }
