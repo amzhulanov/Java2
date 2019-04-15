@@ -13,12 +13,12 @@ public class MultiThreading {
 
     public static void speedMultiThreading() throws InterruptedException {
         //расчёт с одним потоком
-        setDefaultValue();
+        setDefaultValue(arrOneThread,1);
         a = System.currentTimeMillis();
         calcArray(arrOneThread, size, 0);
         System.out.println(String.format("Обработка массива одним потоком длилась - %d ms", System.currentTimeMillis() - a));
         //расчёт с двумя потоками
-        setDefaultValue();
+        setDefaultValue(arrOneThread,1);
         a = System.currentTimeMillis();
         System.arraycopy(arrOneThread, 0, arrMultiThread1, 0, h);
         System.arraycopy(arrOneThread, h, arrMultiThread2, 0, h);
@@ -53,9 +53,9 @@ public class MultiThreading {
         }
     }
 
-    private static void setDefaultValue() {//заполняю массив одинаковыми значениями
-        Arrays.fill(arrOneThread, 1);
+    private static void setDefaultValue(float[] arr,int x) {//заполняю массив одинаковыми значениями
+        Arrays.fill(arr, x);
     }
 
-    
+
 }
