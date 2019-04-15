@@ -6,8 +6,8 @@ import java.util.Arrays;
 import static java.lang.Math.*;
 
 public class OneThread {
-    public static final int size = 10000000;
-    public static final int h = size / 2;
+    private static final int size = 10000000;
+    private static final int h = size / 2;
     public static float[] arrOneThread = new float[size];
 
     public static void setDefaultValue() {//заполняю массив одинаковыми значениями
