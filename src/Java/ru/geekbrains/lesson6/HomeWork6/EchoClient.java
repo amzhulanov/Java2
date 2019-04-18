@@ -4,13 +4,13 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Scanner;
 
 public class EchoClient {
     static class InputMessage implements Runnable {
 
         private Socket socket;
-
 
         private InputMessage(Socket socket) {
             this.socket = socket;
@@ -28,6 +28,8 @@ public class EchoClient {
                         ex.printStackTrace();
                     }
                 }
+            } catch (SocketException ex){
+                System.out.println("Разорвано подключение к сокету. "+ex);
             } catch (IOException ex) {
                 System.out.println("Не удалось прочитать входящий поток" + ex);
             }

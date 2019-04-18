@@ -11,15 +11,13 @@ import java.util.Scanner;
 
 public class EchoServer {
 
-    static class OutputMessage implements Runnable {
+    static class OutputMessage implements Runnable {//класс для отправки сообщения от сервера клиенту
 
         private Socket socket;
         private ArrayList<Socket> mySockets;//массив для хранения id клиентов и сокетов
 
-        private OutputMessage(ArrayList<Socket> mySockets) {//мето
+        private OutputMessage(ArrayList<Socket> mySockets) {//конструктор класса
             this.mySockets = mySockets;
-            this.socket = socket;
-
         }
 
         @Override
@@ -33,16 +31,19 @@ public class EchoServer {
                     socket = mySockets.get(id);
                     DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                     out.writeUTF(line);
-
                 }
             } catch (IOException ex) {
                 System.out.println("Введены не верные данные. Подключение к клиенту разорвано. " + ex);
+            } catch (NumberFormatException ex) {
+                System.out.println("Необходимо следовать шаблону  'id-клиента : текст сообщения'  Ошибка:" + ex);
+            }catch (IndexOutOfBoundsException ex){
+                System.out.println("Клиент с таким id отсутствует. Ошибка "+ex);
             }
         }
     }
 
-    static class ConnectClient implements Runnable {
-
+    static class ConnectClient implements Runnable {//класс для создания потока вновь подключенного клиента
+        // и вывода клиентского сообщения
         private Socket socket;
         private int id;
 
