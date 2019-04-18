@@ -7,29 +7,29 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class EchoClient {
-    static class inputMessage implements Runnable {
+    static class InputMessage implements Runnable {
 
         private Socket socket;
 
-        //private inputMessage(Socket socket) {
-        private inputMessage(Socket socket) {
+
+        private InputMessage(Socket socket) {
             this.socket = socket;
         }
 
         @Override
-        public void run() {
+        public void run() {//метод вывода сообщений от сервера
             try {
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 while (true) {
                     try {
-                        System.out.printf("%nНовое сообщение > " + in.readUTF());
+                        System.out.printf("%nНовое сообщение от сервера>  " + in.readUTF() + "%n");
                         System.out.print("Введите сообщение > ");
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (IOException ex) {
+                System.out.println("Не удалось прочитать входящий поток" + ex);
             }
         }
     }
@@ -40,8 +40,8 @@ public class EchoClient {
              Socket socket = new Socket("localhost", 7777)) {
 
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-
-            Thread thread = new Thread(new inputMessage(socket));//поток для чтения сообщения
+            Thread thread = new Thread(new InputMessage(socket));//поток для чтения сообщения
+            thread.setDaemon(true);
             thread.start();
 
             do {
@@ -51,7 +51,7 @@ public class EchoClient {
 
             } while (scanner.hasNextLine());
         } catch (IOException ex) {
-            ex.printStackTrace();
+            System.out.println("Сервер не обнаружен. " + ex);
         }
     }
 }
