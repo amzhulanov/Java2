@@ -31,7 +31,7 @@ public class ChatServer {
 
     }
 
-    private void start(int port) {
+    private void start(int port)  {
         Socket socket;
         try (ServerSocket serverSocket = new ServerSocket(7777)) {
             System.out.println("Сервер ожидает подключения!");
@@ -59,7 +59,6 @@ public class ChatServer {
                     //socket.close();
                     break;
                 }
-
 
                 if (user != null && authService.authUser(user)) {
                     //если авторизация прошла, то записываем данные пользователя в МАПу
@@ -93,17 +92,13 @@ public class ChatServer {
             throw new LoginException("Указанное имя уже занято");
         }
         return new User(authParts[1], authParts[2]);//передаём данные введённого пользователя
-
     }
 
     private void sendUserConnectedMessage(String login) throws IOException {
         for (ClientHandler clientHandler : clientHandlerMap.values()) {
-            System.out.printf("Sending connect notification to %s about %s%n", clientHandler.getLogin(), login);
-            clientHandler.sendConnectedMessage(login);//отправляю каждому пользователю сообщение о присоединившемся
-            /*if (!clientHandler.getLogin().equals(login)) {
-                System.out.printf("Sending connect notification to %s about %s%n", clientHandler.getLogin(), login);
-                clientHandler.sendConnectedMessage(login);
-            }*/
+            clientHandler.sendConnectedMessage(login);
+            //логин не может совпадать, т.к. новый пользователь ещё не добавлен в МАПу
+            //отправляю сообщение о вновь подключившемся
         }
     }
 
@@ -114,8 +109,6 @@ public class ChatServer {
         } else {
             System.out.printf("User %s not connected%n", msg.getUserTo());
         }
-
-
     }
 
     public void subscribe(String login, Socket socket) throws IOException {
@@ -124,13 +117,11 @@ public class ChatServer {
     }
 
     public static void unsubscribe(String login) throws IOException {
-
+        clientHandlerMap.remove(login);
         for (ClientHandler clientHandler : clientHandlerMap.values()) {
             System.out.printf("Sending disconnect notification to %s about %s%n", clientHandler.getLogin(), login);
-            clientHandler.sendDisconnectedMessage(login);//отправляю каждому клиенту сообщение что пользователь ушёл
+            clientHandler.sendDisconnectedMessage(login);//отправляю каждому клиенту сообщение что пользователь отключился
         }
-            clientHandlerMap.remove(login);
-        // TODO Отправить всем подключенным пользователям сообщение, что данный пользователь отключился
     }
 
     public static boolean loginIsBusy(String login) {//если логин занят, возвращаю True
@@ -140,6 +131,5 @@ public class ChatServer {
         } else {
             return false;
         }
-
     }
 }

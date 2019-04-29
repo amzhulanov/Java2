@@ -107,17 +107,17 @@ public class ViewWindow extends JFrame implements MessageReciever {
         }
         addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(WindowEvent e) {
-                if (network != null) {
-                    userDisconnected(network.getLogin());
-                    try {
-                        network.close();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
+            public void windowClosing(WindowEvent event) {
+                    if (network != null) {
+                        userDisconnected(network.getLogin());
+                        try {
+                            network.close();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
                     }
+                    super.windowClosing(event);
                 }
-                super.windowClosing(e);
-            }
         });
         setTitle("ChatClient: " + network.getLogin());
     }

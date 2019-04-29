@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Collections;
 import java.util.List;
 
@@ -56,6 +57,12 @@ public class Network {
                         if (login != null) {
                             messageReciever.userDisconnected(login);
                             continue;
+                        }
+                    } catch(SocketException e){
+                        try {
+                            ChatServer.unsubscribe(login);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -112,7 +119,7 @@ public class Network {
 
     //@Override
     public void close() throws IOException {
-        ChatServer.unsubscribe(login);
+        //ChatServer.unsubscribe(login);
         this.receiverThread.interrupt();
         sendMessage(DISCONNECTED);
     }
