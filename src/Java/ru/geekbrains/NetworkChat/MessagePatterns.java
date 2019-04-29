@@ -10,7 +10,9 @@ public final class MessagePatterns {
     public static final String AUTH_FAIL_RESPONSE = "/auth fail";
     public static final String AUTH_LOGIN_FAIL_RESPONSE = "/auth login fail";
 
-    public static final String DISCONNECT = "/disconnect";
+    public static final String DISCONNECTED = "/disconnect";
+    public static final String DISCONNECTED_SEND = DISCONNECTED +" %s";
+
     public static final String CONNECTED = "/connected";
     public static final String CONNECTED_SEND = CONNECTED + " %s";
 
@@ -25,7 +27,7 @@ public final class MessagePatterns {
         if (matcher.matches()) {
             return new TextMessage(matcher.group(1), matcher.group(2), matcher.group(3));//(usertTo,userFrom,text)
         } else {
-            System.out.println("Unknown message pattern: " + text);
+            System.out.println("Unknown message pattern MESSAGE_REC_PATTERN: " + text);
             return null;
         }
     }
@@ -35,7 +37,7 @@ public final class MessagePatterns {
         if (parts.length == 3 && parts[0].equals(MESSAGE_PREFIX)) {
             return new TextMessage(parts[1], userTo, parts[2]);
         } else {
-            System.out.println("Unknown message pattern: " + text);
+            System.out.println("Unknown message pattern MESSAGE_PREFIX: " + text);
             return null;
         }
     }
@@ -45,7 +47,17 @@ public final class MessagePatterns {
         if (parts.length == 2 && parts[0].equals(String.format(CONNECTED))) {
             return parts[1];
         } else {
-            System.out.println("Unknown message pattern (from parseConnectedMessage(): " + text);
+            System.out.println("Unknown message pattern CONNECTED: " + text);
+            return null;
+        }
+    }
+
+    public static String parseDisconnectedMessage(String text) {//парсинг сообщения, что пользователь подключился
+        String[] parts = text.split(" ");
+        if (parts.length == 2 && parts[0].equals(String.format(DISCONNECTED))) {
+            return parts[1];
+        } else {
+            System.out.println("Unknown message pattern DISCONNECTED: " + text);
             return null;
         }
     }

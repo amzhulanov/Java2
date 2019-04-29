@@ -123,9 +123,13 @@ public class ChatServer {
         sendUserConnectedMessage(login);//метод отправки пользователям сообщение, с логином нового пользователя
     }
 
-    public static void unsubscribe(String login) {
-        clientHandlerMap.remove(login);
+    public static void unsubscribe(String login) throws IOException {
 
+        for (ClientHandler clientHandler : clientHandlerMap.values()) {
+            System.out.printf("Sending disconnect notification to %s about %s%n", clientHandler.getLogin(), login);
+            clientHandler.sendDisconnectedMessage(login);//отправляю каждому клиенту сообщение что пользователь ушёл
+        }
+            clientHandlerMap.remove(login);
         // TODO Отправить всем подключенным пользователям сообщение, что данный пользователь отключился
     }
 

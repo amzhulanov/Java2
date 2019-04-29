@@ -1,7 +1,5 @@
 package Java.ru.geekbrains.NetworkChat;
 
-import Java.ru.geekbrains.NetworkChat.swing.ViewWindow;
-
 import javax.security.auth.login.LoginException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -53,6 +51,12 @@ public class Network {
                             continue;
                         }
                         // TODO добавить обработку отключения пользователя
+                        System.out.println("Disconnection message " + text);
+                        login = parseDisconnectedMessage(text);
+                        if (login != null) {
+                            messageReciever.userDisconnected(login);
+                            continue;
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                         if (socket.isClosed()) {
@@ -106,11 +110,11 @@ public class Network {
         return login;
     }
 
-    // @Override
-    public void close() {
+    //@Override
+    public void close() throws IOException {
         ChatServer.unsubscribe(login);
         this.receiverThread.interrupt();
-        sendMessage(DISCONNECT);
+        sendMessage(DISCONNECTED);
     }
 }
 

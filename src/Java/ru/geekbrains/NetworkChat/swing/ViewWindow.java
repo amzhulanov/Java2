@@ -6,6 +6,7 @@ import Java.ru.geekbrains.NetworkChat.Network;
 import Java.ru.geekbrains.NetworkChat.TextMessage;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
@@ -13,6 +14,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 
 public class ViewWindow extends JFrame implements MessageReciever {
     private final JTextField message, nick;
@@ -20,15 +22,11 @@ public class ViewWindow extends JFrame implements MessageReciever {
     private final JList<TextMessage> jList;
     private final DefaultListModel<TextMessage> jListModel;
     private final JPanel mainPanel;
-    private final JPanel panel;//панель для размещения списка выбора ника UserTo получателя сообщения
     private final JScrollPane scroll;
     private final JButton buttonEnter;
     private final Network network;
     private final DefaultListModel<String> listUserModel;
     private final JList<String> listUser;
-
-
-
 
     public  ViewWindow() {
         setTitle("ChatClient");
@@ -45,53 +43,38 @@ public class ViewWindow extends JFrame implements MessageReciever {
         jList.setModel(jListModel);
         jList.setCellRenderer(messageCellRenderer);
 
-        //создаю панель на которую помещаю поле для ввода Ника юзера и текст сообщения
-        panel = new JPanel(new FlowLayout(FlowLayout.LEFT));//последовательное расположение слева
         message = new JTextField("Введите сообщение");//текстовое поле для ввода сообщения
-        nick = new JTextField("Nick:");//поле для ввода имени пользователя получателя сообщения
+        nick = new JTextField("Имя пользователя",5);//поле для ввода имени пользователя получателя сообщения
         Font f = nick.getFont();
         nick.setFont(f.deriveFont(f.getStyle() | Font.BOLD));
-        panel.add(nick);
-        panel.add(message);
 
         scroll = new JScrollPane(jList,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         add(scroll, BorderLayout.CENTER);
-        jList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        ListSelectionListener actionListenerJList=new ListSelectionListener() {//проверяю выбор пользователя в списке
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!jList.getValueIsAdjusting()) { // Игнорируем событие mouseDown
-                    nick.setText(jList.getSelectedValue().toString());//устанавливаю выбранное значение
-                }
-            }
-        };
-        jList.addListSelectionListener(actionListenerJList);
+
         ActionListener actionListener = new ActionListener() {//обработка нажатия кнопки Отправить
             @Override
             public void actionPerformed(ActionEvent event) {
                 String text = message.getText().trim();
-                // TODO отправлять сообщение пользователю выбранному в списке userList
                 String userTo = nick.getText().trim();
                 if (text.length() > 0 && userTo.length() > 0) {//проверяем, что сообщение не пустое и указан получатель
                     TextMessage msg = new TextMessage(userTo, network.getLogin(), text);//сообщение, которое отправляет клиент с указанием кому именно
                     jListModel.add(jListModel.getSize(), msg);
                     message.setText(null);
-
                     network.sendTextMessage(msg);//отправка сообщения
                 } else {
-                    System.out.println("Необходимо указать Nick и написать текст сообщения");
+                    System.out.println("Необходимо указать Имя пользователя и написать текст сообщения");
                 }
-
-
             }
         };
-        //jList.addListSelectionListener(actionListenerJList);
         message.addActionListener(actionListener);
-        mainPanel.add(panel);
-        mainPanel.add(buttonEnter);
         buttonEnter.addActionListener(actionListener);
+
+        mainPanel.add(nick,BorderLayout.WEST);
+        mainPanel.add(message,BorderLayout.CENTER);
+        mainPanel.add(buttonEnter, BorderLayout.EAST);
+
         add(mainPanel, BorderLayout.SOUTH);
 
         listUser = new JList<>();
@@ -99,6 +82,17 @@ public class ViewWindow extends JFrame implements MessageReciever {
         listUser.setModel(listUserModel);
         listUser.setPreferredSize(new Dimension(100, 0));
         add(listUser, BorderLayout.WEST);
+
+        listUser.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        ListSelectionListener actionListenerJList=new ListSelectionListener() {//проверяю выбор пользователя в списке
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!listUser.getValueIsAdjusting()) { // Игнорируем событие mouseDown
+                    nick.setText(listUser.getSelectedValue().toString());//устанавливаю выбранное значение
+                }
+            }
+        };
+        listUser.addListSelectionListener(actionListenerJList);
 
         setVisible(true);
 
@@ -116,7 +110,11 @@ public class ViewWindow extends JFrame implements MessageReciever {
             public void windowClosing(WindowEvent e) {
                 if (network != null) {
                     userDisconnected(network.getLogin());
-                    network.close();
+                    try {
+                        network.close();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
                 }
                 super.windowClosing(e);
             }

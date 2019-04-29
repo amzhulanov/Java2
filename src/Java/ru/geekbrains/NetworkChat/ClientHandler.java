@@ -57,12 +57,18 @@ public class ClientHandler {
     }
 
     public void sendMessage(String userTo, String userFrom, String msg) throws IOException {//метод отправки сообщения с сервера клиенту
-        out.writeUTF(String.format(MESSAGE_SEND_PATTERN, userTo,userFrom, msg));//сообщение группируется по паттерну
+        out.writeUTF(String.format(MESSAGE_SEND_PATTERN, userTo,userFrom, msg));
     }
     public void sendConnectedMessage(String login) throws IOException {
 
         if (socket.isConnected()) {
-            out.writeUTF(String.format(CONNECTED_SEND, login));//если есть подключение, то отправляю строку
+            out.writeUTF(String.format(CONNECTED_SEND, login));//если есть подключение, то отправляю строку для подключения
+        }
+    }
+    public void sendDisconnectedMessage(String login) throws IOException {
+
+        if (socket.isConnected()) {
+            out.writeUTF(String.format(DISCONNECTED_SEND, login));//если есть подключение, то отправляю строку для отключения
         }
     }
 }
