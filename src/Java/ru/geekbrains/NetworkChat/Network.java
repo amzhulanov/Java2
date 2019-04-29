@@ -1,14 +1,20 @@
 package Java.ru.geekbrains.NetworkChat;
 
+import Java.ru.geekbrains.NetworkChat.swing.ViewWindow;
+
+import javax.security.auth.login.LoginException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Collections;
+import java.util.List;
+
+
+import static Java.ru.geekbrains.NetworkChat.MessagePatterns.*;
+
 
 public class Network {
-
-    public static final String AUTH_PATTERN = "/auth %s %s";
-    public static final String MESSAGE_SEND_PATTERN = "/w %s %s %s";
 
     public Socket socket;
     public DataInputStream in;
@@ -17,6 +23,7 @@ public class Network {
     private String login;
     private String hostname;
     private int port;
+    private MessageReciever messageReciever;
 
     private Thread receiverThread; //поток для считывания сообщения и отображения на форме
 
@@ -24,35 +31,53 @@ public class Network {
     public Network(String hostname, int port, MessageReciever messageReciever) {
         this.hostname = hostname;
         this.port = port;
+        this.messageReciever = messageReciever;
+
         this.receiverThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (true) {
+                while (!Thread.currentThread().isInterrupted()) {
                     try {
                         String text = in.readUTF();
-                        String[] user = text.split(" ");//Разбиваю полученный текст. Определяю отправителя, получателя и текст
-                        TextMessage textMessage = new TextMessage(user[1], user[2], text.substring(user[0].length() + user[1].length() + user[2].length() + 3)); //UserTo,UserFrom,Text
-                        messageReciever.submitMessage(textMessage);
+
+                        System.out.println("New message " + text);
+                        TextMessage textMessage = parseTextMessageRegx(text);//Разбиваю полученный текст. Определяю отправителя, получателя и текст
+                        if (textMessage != null) {
+                            messageReciever.submitMessage(textMessage);
+                            continue;
+                        }
+                        System.out.println("Connection message " + text);
+                        String login = parseConnectedMessage(text);
+                        if (login != null) {
+                            messageReciever.userConnected(login);
+                            continue;
+                        }
+                        // TODO добавить обработку отключения пользователя
                     } catch (IOException e) {
                         e.printStackTrace();
+                        if (socket.isClosed()) {
+                            break;
+                        }
                     }
-
 
                 }
             }
         });
     }
 
-    public void authorize(String login, String password) throws IOException, AuthException {
+    public void authorize(String login, String password) throws IOException, AuthException, LoginException {
         socket = new Socket(hostname, port);
         out = new DataOutputStream(socket.getOutputStream());
         in = new DataInputStream(socket.getInputStream());
 
         sendMessage(String.format(AUTH_PATTERN, login, password));
         String response = in.readUTF();
-        if (response.equals("/auth successful")) {
+        if (response.equals(AUTH_SUCCESS_RESPONSE)||response.equals(String.format(CONNECTED_SEND,login))) {
             this.login = login;
+
             receiverThread.start();
+        } else if (response.equals(AUTH_LOGIN_FAIL_RESPONSE)) {//если сработало исключение по занятости имени
+            throw new LoginException();
         } else {
             throw new AuthException();
 
@@ -62,7 +87,6 @@ public class Network {
     public void sendTextMessage(TextMessage message) {//метод используется при отправке сообщения из чата-клиента серверу
         sendMessage(String.format(MESSAGE_SEND_PATTERN, message.getUserTo(), message.getUserFrom(), message.getText()));
     }
-
     private void sendMessage(String msg) { //отправляет сформированную строку строчку через сеть
         try {
             out.writeUTF(msg);//msg содержит Логин, UserTo и текст сообщения
@@ -72,7 +96,21 @@ public class Network {
         }
     }
 
+    public List<String> requestConnectedUserList() {
+
+        // TODO реализовать запрос с сервера списка всех подключенных пользователей
+        return Collections.emptyList();
+    }
+
     public String getLogin() {
         return login;
     }
+
+    // @Override
+    public void close() {
+        ChatServer.unsubscribe(login);
+        this.receiverThread.interrupt();
+        sendMessage(DISCONNECT);
+    }
 }
+

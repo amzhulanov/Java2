@@ -16,7 +16,7 @@ public class AuthServiceImp implements AuthService {
     }
 
     @Override
-    public boolean authUser(User user) {
+    public boolean authUser(User user) {//проверка введённого пароля
         String pwd=users.get(user.getLogin());
         return pwd !=null&& pwd.equals(user.getPassword());
     }

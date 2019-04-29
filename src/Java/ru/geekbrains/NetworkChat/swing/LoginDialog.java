@@ -2,8 +2,10 @@ package Java.ru.geekbrains.NetworkChat.swing;
 
 
 import Java.ru.geekbrains.NetworkChat.AuthException;
+import Java.ru.geekbrains.NetworkChat.ChatServer;
 import Java.ru.geekbrains.NetworkChat.Network;
 
+import javax.security.auth.login.LoginException;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
@@ -68,6 +70,7 @@ public class LoginDialog extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 try {//авторизация при нажатии на кнопку Войти
                     network.authorize(tfUsername.getText(), String.valueOf(pfPassword.getPassword()));
+
                     connected = true;
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(LoginDialog.this,
@@ -78,6 +81,12 @@ public class LoginDialog extends JDialog {
                 } catch (AuthException ex) {
                     JOptionPane.showMessageDialog(LoginDialog.this,
                             "Ошибка авторизации",
+                            "Авторизация",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }catch(LoginException ex){
+                    JOptionPane.showMessageDialog(LoginDialog.this,
+                            "Имя занято",
                             "Авторизация",
                             JOptionPane.ERROR_MESSAGE);
                     return;

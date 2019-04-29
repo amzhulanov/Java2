@@ -1,11 +1,14 @@
 package Java.ru.geekbrains.NetworkChat;
 
+import Java.ru.geekbrains.NetworkChat.swing.ViewWindow;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import static Java.ru.geekbrains.NetworkChat.Network.MESSAGE_SEND_PATTERN;
+import static Java.ru.geekbrains.NetworkChat.MessagePatterns.parseTextMessageRegx;
+import static Java.ru.geekbrains.NetworkChat.MessagePatterns.*;
 
 public class ClientHandler {
     private final String login;
@@ -17,6 +20,7 @@ public class ClientHandler {
     private final Thread handleThread;
     private ChatServer chatServer;
 
+    //СlientHandler создаётся для каждого клиента
     public ClientHandler(String login, Socket socket, ChatServer chatServer) throws IOException {
         this.login = login;
         this.socket = socket;
@@ -32,11 +36,11 @@ public class ClientHandler {
                     try{
                         String msg = in.readUTF();//сервер слушает поступающие сообщения
                         System.out.printf("Message from user %s: %s%n",login,msg);
-                        String[] message=msg.split(" "); //разбиваю поступившее на сервер сообщение на части
-                        if (message[1]!=null){//сли не пустое имя клиента, то отправляю в SendMessage сервера
-                            chatServer.sendMessage(message[1],message[2],msg.substring(message[0].length()+message[1].length()+message[2].length()+3));//userTo,userFrom,text
-                        }
+                        TextMessage message=parseTextMessageRegx(msg);//разбиваю поступившее на сервер сообщение на части
+                        if (msg!=null){
+                            chatServer.sendMessage(message);//userTo,userFrom,text
 
+                        }
                     }catch(IOException ex){
                         ex.printStackTrace();
                         break;
@@ -55,5 +59,10 @@ public class ClientHandler {
     public void sendMessage(String userTo, String userFrom, String msg) throws IOException {//метод отправки сообщения с сервера клиенту
         out.writeUTF(String.format(MESSAGE_SEND_PATTERN, userTo,userFrom, msg));//сообщение группируется по паттерну
     }
+    public void sendConnectedMessage(String login) throws IOException {
 
+        if (socket.isConnected()) {
+            out.writeUTF(String.format(CONNECTED_SEND, login));//если есть подключение, то отправляю строку
+        }
+    }
 }
