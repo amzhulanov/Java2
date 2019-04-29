@@ -63,7 +63,6 @@ public class ViewWindow extends JFrame implements MessageReciever {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!jList.getValueIsAdjusting()) { // Игнорируем событие mouseDown
-                    //System.out.printf("Получатель из списка - %s ",jList.getSelectedValue().toString());
                     nick.setText(jList.getSelectedValue().toString());//устанавливаю выбранное значение
                 }
             }
