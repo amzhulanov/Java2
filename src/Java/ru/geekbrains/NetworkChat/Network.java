@@ -1,15 +1,20 @@
 package Java.ru.geekbrains.NetworkChat;
 
+//import com.sun.jdi.Value;
+
 import javax.security.auth.login.LoginException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 
+import static Java.ru.geekbrains.NetworkChat.ChatServer.clientHandlerMap;
 import static Java.ru.geekbrains.NetworkChat.MessagePatterns.*;
 
 
@@ -31,6 +36,7 @@ public class Network {
         this.hostname = hostname;
         this.port = port;
         this.messageReciever = messageReciever;
+        // this.clientHandlerRequest=ClientHandler;
 
         this.receiverThread = new Thread(new Runnable() {
             @Override
@@ -51,14 +57,19 @@ public class Network {
                             messageReciever.userConnected(login);
                             continue;
                         }
-                        // TODO добавить обработку отключения пользователя
+
                         System.out.println("Disconnection message " + text);
                         login = parseDisconnectedMessage(text);
                         if (login != null) {
                             messageReciever.userDisconnected(login);
                             continue;
                         }
-                    } catch(SocketException e){
+                        Set<String> users = parseUserList(text);
+
+                        if (users != null) {
+                            messageReciever.updateUserList(users);
+                        }
+                    } catch (SocketException e) {
                         try {
                             ChatServer.unsubscribe(login);
                         } catch (IOException ex) {
@@ -83,10 +94,11 @@ public class Network {
 
         sendMessage(String.format(AUTH_PATTERN, login, password));
         String response = in.readUTF();
-        if (response.equals(AUTH_SUCCESS_RESPONSE)||response.equals(String.format(CONNECTED_SEND,login))) {
+        if (response.equals(AUTH_SUCCESS_RESPONSE) || response.equals(String.format(CONNECTED_SEND, login))) {
             this.login = login;
 
             receiverThread.start();
+
         } else if (response.equals(AUTH_LOGIN_FAIL_RESPONSE)) {//если сработало исключение по занятости имени
             throw new LoginException();
         } else {
@@ -98,6 +110,7 @@ public class Network {
     public void sendTextMessage(TextMessage message) {//метод используется при отправке сообщения из чата-клиента серверу
         sendMessage(String.format(MESSAGE_SEND_PATTERN, message.getUserTo(), message.getUserFrom(), message.getText()));
     }
+
     private void sendMessage(String msg) { //отправляет сформированную строку строчку через сеть
         try {
             out.writeUTF(msg);//msg содержит Логин, UserTo и текст сообщения
@@ -107,11 +120,20 @@ public class Network {
         }
     }
 
-    public List<String> requestConnectedUserList() {
-
-        // TODO реализовать запрос с сервера списка всех подключенных пользователей
-        return Collections.emptyList();
+    public void requestConnectedUserList() {
+        sendMessage(USER_LIST_TAG);
     }
+
+   /* public static List<String> requestConnectedUserList() {
+        //ClientHandler
+        //list=new ArrayList<Value>(ClientHandler)
+        //List<String> list=new ArrayList<String>(clientHandlerMap.keySet());
+        // TODO реализовать запрос с сервера списка всех подключенных пользователей
+        //return Collections.emptyList();
+        // sendMessage(String.format(REQUEST,userRequest);
+        System.out.println(new ArrayList<String>(clientHandlerMap.keySet()));
+        return new ArrayList<String>(clientHandlerMap.keySet());
+    }*/
 
     public String getLogin() {
         return login;

@@ -15,6 +15,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.Set;
 
 public class ViewWindow extends JFrame implements MessageReciever {
     private final JTextField message, nick;
@@ -105,6 +106,7 @@ public class ViewWindow extends JFrame implements MessageReciever {
         if (!loginDialog.isConnected()) {//если не подключился, то после закрытия окна логина приложение закрывается
             System.exit(0);
         }
+        this.network.requestConnectedUserList();
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent event) {
@@ -153,6 +155,19 @@ public class ViewWindow extends JFrame implements MessageReciever {
                 int ix = listUserModel.indexOf(login);//убираем пользователя из списка
                 if (ix >= 0) {
                     listUserModel.remove(ix);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void updateUserList(Set<String> users) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                listUserModel.clear();
+                for (String usr : users) {
+                    listUserModel.addElement(usr);
                 }
             }
         });

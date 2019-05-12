@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Set;
 
 import static Java.ru.geekbrains.NetworkChat.MessagePatterns.parseTextMessageRegx;
 import static Java.ru.geekbrains.NetworkChat.MessagePatterns.*;
@@ -44,6 +45,9 @@ public class ClientHandler {
                             System.out.printf("User %s is disconnected%n", login);
                             chatServer.unsubscribe(login);
                             return;
+                        } else if (msg.equals(USER_LIST_TAG)) {
+                            System.out.printf("Sending user list to %s%n", login);
+                            sendUserList(chatServer.getUserList());
                         } else if (msg != null) {
                             chatServer.sendMessage(message);//userTo,userFrom,text
 
@@ -78,6 +82,11 @@ public class ClientHandler {
 
         if (socket.isConnected()) {
             out.writeUTF(String.format(DISCONNECTED_SEND, login));//если есть подключение, то отправляю строку для отключения
+        }
+    }
+    public void sendUserList(Set<String> users) throws IOException {
+        if (socket.isConnected()) {
+            out.writeUTF(String.format(USER_LIST_RESPONSE, String.join(" ", users)));
         }
     }
 }

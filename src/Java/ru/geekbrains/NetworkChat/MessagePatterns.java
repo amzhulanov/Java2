@@ -1,5 +1,7 @@
 package Java.ru.geekbrains.NetworkChat;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +18,11 @@ public final class MessagePatterns {
     public static final String CONNECTED = "/connected";
     public static final String CONNECTED_SEND = CONNECTED + " %s";
 
+    public static final String USER_LIST_TAG = "/user_list";
+    public static final String USER_LIST_RESPONSE = USER_LIST_TAG + " %s";
+
+    public static final String REQUEST="/req";
+
     public static final String MESSAGE_PREFIX = "/w";
     public static final String MESSAGE_SEND_PATTERN = MESSAGE_PREFIX + " %s %s %s";
 
@@ -27,7 +34,7 @@ public final class MessagePatterns {
         if (matcher.matches()) {
             return new TextMessage(matcher.group(1), matcher.group(2), matcher.group(3));//(usertTo,userFrom,text)
         } else {
-            System.out.println("Unknown message pattern MESSAGE_REC_PATTERN: " + text);
+           // System.out.println("Unknown message pattern MESSAGE_REC_PATTERN: " + text);
             return null;
         }
     }
@@ -37,7 +44,7 @@ public final class MessagePatterns {
         if (parts.length == 3 && parts[0].equals(MESSAGE_PREFIX)) {
             return new TextMessage(parts[1], userTo, parts[2]);
         } else {
-            System.out.println("Unknown message pattern MESSAGE_PREFIX: " + text);
+          //  System.out.println("Unknown message pattern MESSAGE_PREFIX: " + text);
             return null;
         }
     }
@@ -47,7 +54,7 @@ public final class MessagePatterns {
         if (parts.length == 2 && parts[0].equals(String.format(CONNECTED))) {
             return parts[1];
         } else {
-            System.out.println("Unknown message pattern CONNECTED: " + text);
+           // System.out.println("Unknown message pattern CONNECTED: " + text);
             return null;
         }
     }
@@ -57,7 +64,21 @@ public final class MessagePatterns {
         if (parts.length == 2 && parts[0].equals(String.format(DISCONNECTED))) {
             return parts[1];
         } else {
-            System.out.println("Unknown message pattern DISCONNECTED: " + text);
+           // System.out.println("Unknown message pattern DISCONNECTED: " + text);
+            return null;
+        }
+    }
+
+    public static Set<String> parseUserList(String text) {
+        String[] parts = text.split(" ");
+        if (parts.length >= 1 && parts[0].equals(USER_LIST_TAG)) {
+            Set<String> users = new HashSet<>();
+            for (int i=1; i<parts.length; i++) {
+                users.add(parts[i]);
+            }
+            return users;
+        } else {
+            System.out.println("Not a user list pattern: " + text);
             return null;
         }
     }

@@ -1,38 +1,54 @@
 package Java.ru.geekbrains.NetworkChat;
 
 import Java.ru.geekbrains.NetworkChat.Authorization.AuthService;
-import Java.ru.geekbrains.NetworkChat.Authorization.AuthServiceImp;
-import Java.ru.geekbrains.NetworkChat.swing.LoginDialog;
+import Java.ru.geekbrains.NetworkChat.Authorization.AuthServiceJdbcImpl;
+import Java.ru.geekbrains.NetworkChat.Persistance.UserRepository;
 
 import javax.security.auth.login.LoginException;
-import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static Java.ru.geekbrains.NetworkChat.MessagePatterns.AUTH_SUCCESS_RESPONSE;
 import static Java.ru.geekbrains.NetworkChat.MessagePatterns.AUTH_FAIL_RESPONSE;
 import static Java.ru.geekbrains.NetworkChat.MessagePatterns.AUTH_LOGIN_FAIL_RESPONSE;
+import static java.lang.Thread.sleep;
 
 public class ChatServer {
 
-    private AuthService authService = new AuthServiceImp();
+    public static AuthService authService;// = new AuthServiceJdbcImpl();
     //синхронизированная Мап хранит логин и всего пользователя. Синхронизация необходима для доступа к МАПе из всех потоков
-    private static Map<String, ClientHandler> clientHandlerMap = Collections.synchronizedMap(new HashMap<>());
+    public static Map<String, ClientHandler> clientHandlerMap = Collections.synchronizedMap(new HashMap<>());
+    private MessageReciever userReciever;
+    //public static AuthService authService;
+    public static void main(String[] args) throws InterruptedException {
 
-    public static void main(String[] args) {
+        try {
+            Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/network_chat?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Novosibirsk","root","Fqtlfqk");
+
+            UserRepository userRepository = new UserRepository(con);
+            authService = new AuthServiceJdbcImpl(userRepository);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return;
+        }
         ChatServer chatServer = new ChatServer();
         chatServer.start(7777);
 
     }
 
-    private void start(int port)  {
+    private void start(int port) throws InterruptedException {
         Socket socket;
+        this.userReciever=userReciever;
         try (ServerSocket serverSocket = new ServerSocket(7777)) {
             System.out.println("Сервер ожидает подключения!");
             while (true) {
@@ -64,6 +80,7 @@ public class ChatServer {
                     //если авторизация прошла, то записываем данные пользователя в МАПу
                     System.out.println("Подключился пользователь " + user.getLogin());
                     subscribe(user.getLogin(), socket);
+
                     out.writeUTF(AUTH_SUCCESS_RESPONSE);
                     out.flush();
 
@@ -91,7 +108,7 @@ public class ChatServer {
         if (ChatServer.loginIsBusy(authParts[1])) {
             throw new LoginException("Указанное имя уже занято");
         }
-        return new User(authParts[1], authParts[2]);//передаём данные введённого пользователя
+        return new User(-1,authParts[1], authParts[2]);//передаём данные введённого пользователя
     }
 
     private void sendUserConnectedMessage(String login) throws IOException {
@@ -111,9 +128,11 @@ public class ChatServer {
         }
     }
 
-    public void subscribe(String login, Socket socket) throws IOException {
-        clientHandlerMap.put(login, new ClientHandler(login, socket, this));
+    public void subscribe(String login, Socket socket) throws IOException, InterruptedException {
+        ClientHandler clientHandler=new ClientHandler(login, socket, this);
+        clientHandlerMap.put(login, clientHandler);
         sendUserConnectedMessage(login);//метод отправки пользователям сообщение, с логином нового пользователя
+
     }
 
     public static void unsubscribe(String login) throws IOException {
@@ -126,10 +145,16 @@ public class ChatServer {
 
     public static boolean loginIsBusy(String login) {//если логин занят, возвращаю True
         //ClientHandler clientHandler=clientHandlerMap.get(login);
+        //TODO проверить наличие имени в столбце login в таблицу Users
+        //UserRepository user=
+        //if (findByLogin(login)!=null) {
         if (clientHandlerMap.get(login) != null) {
             return true;
         } else {
             return false;
         }
+    }
+    public Set<String> getUserList() {
+        return Collections.unmodifiableSet(clientHandlerMap.keySet());
     }
 }
