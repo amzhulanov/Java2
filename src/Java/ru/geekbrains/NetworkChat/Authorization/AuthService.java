@@ -4,4 +4,6 @@ import Java.ru.geekbrains.NetworkChat.User;
 
 public interface AuthService {
     boolean authUser(User user);
+
+
 }

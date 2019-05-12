@@ -1,8 +1,7 @@
 package Java.ru.geekbrains.NetworkChat.swing;
 
 
-import Java.ru.geekbrains.NetworkChat.AuthException;
-import Java.ru.geekbrains.NetworkChat.ChatServer;
+import Java.ru.geekbrains.NetworkChat.Exception.AuthException;
 import Java.ru.geekbrains.NetworkChat.Network;
 
 import javax.security.auth.login.LoginException;
@@ -23,6 +22,7 @@ public class LoginDialog extends JDialog {
     private JLabel lbPassword;
     private JButton btnLogin;
     private JButton btnCancel;
+    private JButton btnRegistration;
 
     private boolean connected;
 
@@ -62,6 +62,7 @@ public class LoginDialog extends JDialog {
 
         btnLogin = new JButton("Войти");
         btnCancel = new JButton("Отмена");
+        btnRegistration = new JButton("Регистрация");
 
         JPanel bp = new JPanel();
         bp.add(btnLogin);
@@ -105,8 +106,18 @@ public class LoginDialog extends JDialog {
             }
         });
 
+        bp.add(btnRegistration);//открывается форма регистрации нового пользователя
+        btnRegistration.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                RegistrationDialog registrationDialog = new RegistrationDialog(parent, network);
+                registrationDialog.setVisible(true);//вывожу окно ввода логин/пароль
+            }
+        });
+
         getContentPane().add(panel, BorderLayout.CENTER);
         getContentPane().add(bp, BorderLayout.PAGE_END);
+
 
         pack();
         setResizable(false);

@@ -27,14 +27,12 @@ public final class MessagePatterns {
     public static final String MESSAGE_SEND_PATTERN = MESSAGE_PREFIX + " %s %s %s";
 
     public static final Pattern MESSAGE_REC_PATTERN = Pattern.compile("^/w (\\w+) (.\\w+) (.+)", Pattern.MULTILINE);
-    //MESSAGE_REC_PATTERN(usertTo,userFrom,text)
 
     public static TextMessage parseTextMessageRegx(String text) {
         Matcher matcher = MESSAGE_REC_PATTERN.matcher(text);
         if (matcher.matches()) {
             return new TextMessage(matcher.group(1), matcher.group(2), matcher.group(3));//(usertTo,userFrom,text)
         } else {
-           // System.out.println("Unknown message pattern MESSAGE_REC_PATTERN: " + text);
             return null;
         }
     }
@@ -44,7 +42,6 @@ public final class MessagePatterns {
         if (parts.length == 3 && parts[0].equals(MESSAGE_PREFIX)) {
             return new TextMessage(parts[1], userTo, parts[2]);
         } else {
-          //  System.out.println("Unknown message pattern MESSAGE_PREFIX: " + text);
             return null;
         }
     }
@@ -54,7 +51,6 @@ public final class MessagePatterns {
         if (parts.length == 2 && parts[0].equals(String.format(CONNECTED))) {
             return parts[1];
         } else {
-           // System.out.println("Unknown message pattern CONNECTED: " + text);
             return null;
         }
     }
@@ -64,7 +60,6 @@ public final class MessagePatterns {
         if (parts.length == 2 && parts[0].equals(String.format(DISCONNECTED))) {
             return parts[1];
         } else {
-           // System.out.println("Unknown message pattern DISCONNECTED: " + text);
             return null;
         }
     }
@@ -78,7 +73,6 @@ public final class MessagePatterns {
             }
             return users;
         } else {
-            System.out.println("Not a user list pattern: " + text);
             return null;
         }
     }

@@ -112,11 +112,9 @@ public class ViewWindow extends JFrame implements MessageReciever {
             public void windowClosing(WindowEvent event) {
                     if (network != null) {
                         userDisconnected(network.getLogin());
-                        try {
+
                             network.close();
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
+
                     }
                     super.windowClosing(event);
                 }

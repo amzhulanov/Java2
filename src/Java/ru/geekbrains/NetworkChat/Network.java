@@ -1,6 +1,6 @@
 package Java.ru.geekbrains.NetworkChat;
 
-//import com.sun.jdi.Value;
+import Java.ru.geekbrains.NetworkChat.Exception.AuthException;
 
 import javax.security.auth.login.LoginException;
 import java.io.DataInputStream;
@@ -8,15 +8,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
-
-import static Java.ru.geekbrains.NetworkChat.ChatServer.clientHandlerMap;
 import static Java.ru.geekbrains.NetworkChat.MessagePatterns.*;
-
 
 public class Network {
 
@@ -36,7 +30,6 @@ public class Network {
         this.hostname = hostname;
         this.port = port;
         this.messageReciever = messageReciever;
-        // this.clientHandlerRequest=ClientHandler;
 
         this.receiverThread = new Thread(new Runnable() {
             @Override
@@ -124,24 +117,11 @@ public class Network {
         sendMessage(USER_LIST_TAG);
     }
 
-   /* public static List<String> requestConnectedUserList() {
-        //ClientHandler
-        //list=new ArrayList<Value>(ClientHandler)
-        //List<String> list=new ArrayList<String>(clientHandlerMap.keySet());
-        // TODO реализовать запрос с сервера списка всех подключенных пользователей
-        //return Collections.emptyList();
-        // sendMessage(String.format(REQUEST,userRequest);
-        System.out.println(new ArrayList<String>(clientHandlerMap.keySet()));
-        return new ArrayList<String>(clientHandlerMap.keySet());
-    }*/
-
     public String getLogin() {
         return login;
     }
 
-    //@Override
-    public void close() throws IOException {
-        //ChatServer.unsubscribe(login);
+    public void close() {
         this.receiverThread.interrupt();
         sendMessage(DISCONNECTED);
     }

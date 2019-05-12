@@ -1,12 +1,10 @@
 package Java.ru.geekbrains.NetworkChat;
 
-import Java.ru.geekbrains.NetworkChat.swing.ViewWindow;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.Set;
 
 import static Java.ru.geekbrains.NetworkChat.MessagePatterns.parseTextMessageRegx;
@@ -37,16 +35,12 @@ public class ClientHandler {
 
                     try {
                         String msg = in.readUTF();//сервер слушает поступающие сообщения
-                        System.out.printf("Message from user %s: %s%n", login, msg);
-                        System.out.println("New message " + msg);
                         TextMessage message = parseTextMessageRegx(msg);//разбиваю поступившее на сервер сообщение на части
 
                         if (msg.equals(DISCONNECTED)) {
-                            System.out.printf("User %s is disconnected%n", login);
                             chatServer.unsubscribe(login);
                             return;
                         } else if (msg.equals(USER_LIST_TAG)) {
-                            System.out.printf("Sending user list to %s%n", login);
                             sendUserList(chatServer.getUserList());
                         } else if (msg != null) {
                             chatServer.sendMessage(message);//userTo,userFrom,text

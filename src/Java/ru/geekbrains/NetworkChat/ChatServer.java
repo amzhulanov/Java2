@@ -2,6 +2,7 @@ package Java.ru.geekbrains.NetworkChat;
 
 import Java.ru.geekbrains.NetworkChat.Authorization.AuthService;
 import Java.ru.geekbrains.NetworkChat.Authorization.AuthServiceJdbcImpl;
+import Java.ru.geekbrains.NetworkChat.Exception.AuthException;
 import Java.ru.geekbrains.NetworkChat.Persistance.UserRepository;
 
 import javax.security.auth.login.LoginException;
@@ -21,7 +22,6 @@ import java.util.Set;
 import static Java.ru.geekbrains.NetworkChat.MessagePatterns.AUTH_SUCCESS_RESPONSE;
 import static Java.ru.geekbrains.NetworkChat.MessagePatterns.AUTH_FAIL_RESPONSE;
 import static Java.ru.geekbrains.NetworkChat.MessagePatterns.AUTH_LOGIN_FAIL_RESPONSE;
-import static java.lang.Thread.sleep;
 
 public class ChatServer {
 
@@ -29,13 +29,13 @@ public class ChatServer {
     //синхронизированная Мап хранит логин и всего пользователя. Синхронизация необходима для доступа к МАПе из всех потоков
     public static Map<String, ClientHandler> clientHandlerMap = Collections.synchronizedMap(new HashMap<>());
     private MessageReciever userReciever;
-    //public static AuthService authService;
-    public static void main(String[] args) throws InterruptedException {
+    public static UserRepository userRepository;
+    public static void main(String[] args) throws InterruptedException, SQLException {
 
         try {
             Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/network_chat?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Novosibirsk","root","Fqtlfqk");
 
-            UserRepository userRepository = new UserRepository(con);
+            userRepository = new UserRepository(con);
             authService = new AuthServiceJdbcImpl(userRepository);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -62,17 +62,20 @@ public class ChatServer {
 
                 } catch (IOException ex) {
                     ex.printStackTrace();
-                } catch (AuthException ex) {//Если авторизация не прошла, сообщаем об этом и закрываем сокет
+                }catch (SQLException ex){
+                    System.out.println("В сети уже есть пользователь с таким именем");
+                    out.writeUTF(AUTH_LOGIN_FAIL_RESPONSE);
+                    out.flush();
+                    break;
+                }catch (AuthException ex) {//Если авторизация не прошла, сообщаем об этом и закрываем сокет
                     out.writeUTF(AUTH_FAIL_RESPONSE);
                     out.flush();
                     break;
-                    //  socket.close();
                 } catch (LoginException ex) {
 
                     System.out.println("В сети уже есть пользователь с таким именем");
                     out.writeUTF(AUTH_LOGIN_FAIL_RESPONSE);
                     out.flush();
-                    //socket.close();
                     break;
                 }
 
@@ -90,7 +93,6 @@ public class ChatServer {
                     }
                     out.writeUTF(AUTH_FAIL_RESPONSE);
                     out.flush();
-                    // socket.close();
                 }
             }
         } catch (IOException e) {
@@ -98,11 +100,10 @@ public class ChatServer {
         }
     }
 
-    private User checkAuthentication(String authMessage) throws AuthException, LoginException {
+    private User checkAuthentication(String authMessage) throws AuthException, LoginException, SQLException {
         String[] authParts = authMessage.split(" ");
 
         if (authParts.length != 3 || !authParts[0].equals("/auth")) {
-            System.out.printf("Incorrect authorization message %s%n", authMessage);
             throw new AuthException();
         }
         if (ChatServer.loginIsBusy(authParts[1])) {
@@ -138,23 +139,22 @@ public class ChatServer {
     public static void unsubscribe(String login) throws IOException {
         clientHandlerMap.remove(login);
         for (ClientHandler clientHandler : clientHandlerMap.values()) {
-            System.out.printf("Sending disconnect notification to %s about %s%n", clientHandler.getLogin(), login);
+           // System.out.printf("Sending disconnect notification to %s about %s%n", clientHandler.getLogin(), login);
             clientHandler.sendDisconnectedMessage(login);//отправляю каждому клиенту сообщение что пользователь отключился
         }
     }
 
-    public static boolean loginIsBusy(String login) {//если логин занят, возвращаю True
-        //ClientHandler clientHandler=clientHandlerMap.get(login);
-        //TODO проверить наличие имени в столбце login в таблицу Users
-        //UserRepository user=
-        //if (findByLogin(login)!=null) {
+    public static boolean loginIsBusy(String login) throws SQLException {
+        //метод проверяет есть ли такой пользователь уже в сети
         if (clientHandlerMap.get(login) != null) {
-            return true;
+            return true;//возвращает true, если пользователь в сети
         } else {
-            return false;
+            return false;//возвращает false, если пользователя нет в сети
         }
     }
+
     public Set<String> getUserList() {
         return Collections.unmodifiableSet(clientHandlerMap.keySet());
     }
+
 }

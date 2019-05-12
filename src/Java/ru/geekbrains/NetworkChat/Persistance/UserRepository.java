@@ -1,8 +1,6 @@
 package Java.ru.geekbrains.NetworkChat.Persistance;
 
-import Java.ru.geekbrains.NetworkChat.ChatServer;
 import Java.ru.geekbrains.NetworkChat.User;
-import com.mysql.cj.protocol.Resultset;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -25,27 +23,31 @@ public class UserRepository {
         System.out.println("Table ok.");
     }
 
-    public void insert(User user) { //добавляю нового пользователя
+    public void insert(String login, String password) { //добавляю нового пользователя
         try {
-            statmt.executeQuery("insert into users (login,password) values ('" + user.getLogin() + "','" + user.getPassword() + "');");
+            statmt.executeQuery("insert into users (login,password) values ('" + login + "','" + password + "');");
         } catch (SQLException e) {
-            System.out.println("Пользователь не добавлен");
+            //System.out.println("Пользователь не добавлен");
             e.printStackTrace();
         }
     }
 
     public User findByLogin(String login) throws SQLException {//ищу пользователя в БД по логину
+        boolean exist=false;
         ResultSet resultSet = null;
         resultSet = statmt.executeQuery("select id,login,password from users where login='" + login + "'");
-        if (resultSet.next()==true){
+        exist=resultSet.next();
+        if (exist){
             return new User(resultSet.getInt(1),
                     resultSet.getString(2),
                     resultSet.getString(3));
-        }
+        }else {
             return null;
+        }
     }
 
     public List<User> getAllUsers() throws SQLException {//извлекаю из БД полный список пользователей и выгружаю в List
+
         List<User> userArrayList = new ArrayList();
         ResultSet resultSet = statmt.executeQuery("select id,login,password  from users ");
         while (resultSet.next()) {
