@@ -34,7 +34,7 @@ public class AuthServiceJdbcImpl implements AuthService {
 
 
     public static boolean registrationUser(String login, String password, String passwordRepeat) throws RegPasswordException, RegLoginException, LoginException, SQLException {
-        Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/network_chat?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Novosibirsk","root","Fqtlfqk");
+        Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/network_chat?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Novosibirsk","root","root");
         Statement stmt=con.createStatement();
         if (!password.equals((passwordRepeat))||password.isEmpty()) {//введённые пароли должны совпадать
             throw new RegPasswordException();

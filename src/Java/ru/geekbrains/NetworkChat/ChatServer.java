@@ -33,7 +33,7 @@ public class ChatServer {
     public static void main(String[] args) throws InterruptedException, SQLException {
 
         try {
-            Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/network_chat?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Novosibirsk","root","Fqtlfqk");
+            Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/network_chat?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Novosibirsk","root","root");
 
             userRepository = new UserRepository(con);
             authService = new AuthServiceJdbcImpl(userRepository);
@@ -139,7 +139,6 @@ public class ChatServer {
     public static void unsubscribe(String login) throws IOException {
         clientHandlerMap.remove(login);
         for (ClientHandler clientHandler : clientHandlerMap.values()) {
-           // System.out.printf("Sending disconnect notification to %s about %s%n", clientHandler.getLogin(), login);
             clientHandler.sendDisconnectedMessage(login);//отправляю каждому клиенту сообщение что пользователь отключился
         }
     }

@@ -37,28 +37,22 @@ public class Network {
                 while (!Thread.currentThread().isInterrupted()) {
                     try {
                         String text = in.readUTF();
-
-                        System.out.println("New message " + text);
                         TextMessage textMessage = parseTextMessageRegx(text);//Разбиваю полученный текст. Определяю отправителя, получателя и текст
                         if (textMessage != null) {
                             messageReciever.submitMessage(textMessage);
                             continue;
                         }
-                        System.out.println("Connection message " + text);
                         String login = parseConnectedMessage(text);
                         if (login != null) {
                             messageReciever.userConnected(login);
                             continue;
                         }
-
-                        System.out.println("Disconnection message " + text);
                         login = parseDisconnectedMessage(text);
                         if (login != null) {
                             messageReciever.userDisconnected(login);
                             continue;
                         }
                         Set<String> users = parseUserList(text);
-
                         if (users != null) {
                             messageReciever.updateUserList(users);
                         }
