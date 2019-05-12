@@ -9,7 +9,6 @@ import Java.ru.geekbrains.NetworkChat.User;
 import javax.security.auth.login.LoginException;
 import java.sql.*;
 
-import static jdk.nashorn.internal.objects.NativeString.trim;
 
 public class AuthServiceJdbcImpl implements AuthService {
 
@@ -49,7 +48,9 @@ public class AuthServiceJdbcImpl implements AuthService {
             preparedStatement.setString(1,login);
             preparedStatement.setString(2,password);
             preparedStatement.execute();
+            stmt.close();
             preparedStatement.close();
+            con.close();
             return true;
 
         }
