@@ -2,6 +2,7 @@ package Java.ru.geekbrains.NetworkChat.swing;
 
 
 import Java.ru.geekbrains.NetworkChat.Exception.AuthException;
+import Java.ru.geekbrains.NetworkChat.Exception.LoginNonExistent;
 import Java.ru.geekbrains.NetworkChat.Network;
 
 import javax.security.auth.login.LoginException;
@@ -79,6 +80,12 @@ public class LoginDialog extends JDialog {
                             "Авторизация",
                             JOptionPane.ERROR_MESSAGE);
                     return;
+                } catch(LoginNonExistent ex){
+                    JOptionPane.showMessageDialog(LoginDialog.this,
+                            "Пользователь не зарегистрирован",
+                            "Авторизация",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
                 } catch (AuthException ex) {
                     JOptionPane.showMessageDialog(LoginDialog.this,
                             "Ошибка авторизации",
@@ -117,7 +124,6 @@ public class LoginDialog extends JDialog {
 
         getContentPane().add(panel, BorderLayout.CENTER);
         getContentPane().add(bp, BorderLayout.PAGE_END);
-
 
         pack();
         setResizable(false);

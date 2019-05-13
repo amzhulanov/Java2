@@ -1,6 +1,9 @@
 package Java.ru.geekbrains.NetworkChat;
 
 
+import Java.ru.geekbrains.NetworkChat.swing.RegistrationDialog;
+
+import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -42,7 +45,10 @@ public class ClientHandler {
                             return;
                         } else if (msg.equals(USER_LIST_TAG)) {
                             sendUserList(chatServer.getUserList());
-                        } else if (msg != null) {
+                        }/* else if (msg.equals(REG_LOGIN_BUSY)) {
+                            //JOptionPane.showMessageDialog();
+                            System.out.println("Показываю сообщение о занятости логина");
+                        } */else if (msg != null) {
                             chatServer.sendMessage(message);//userTo,userFrom,text
 
                         }

@@ -25,25 +25,35 @@ public class UserRepository {
 
     public void insert(String login, String password) { //добавляю нового пользователя
         try {
-            statmt.executeQuery("insert into users (login,password) values ('" + login + "','" + password + "');");
+            PreparedStatement preparedStatement=conn.prepareStatement("insert into users (login,password) values(?,?)");
+            preparedStatement.setString(1,login);
+            preparedStatement.setString(2,password);
+            preparedStatement.execute();
+            preparedStatement.close();
         } catch (SQLException e) {
             //System.out.println("Пользователь не добавлен");
             e.printStackTrace();
         }
     }
 
-    public User findByLogin(String login) throws SQLException {//ищу пользователя в БД по логину
+    public User findByLogin(String login)  {//ищу пользователя в БД по логину
         boolean exist=false;
         ResultSet resultSet = null;
-        resultSet = statmt.executeQuery("select id,login,password from users where login='" + login + "'");
-        exist=resultSet.next();
-        if (exist){
-            return new User(resultSet.getInt(1),
-                    resultSet.getString(2),
-                    resultSet.getString(3));
-        }else {
-            return null;
+        try {
+            resultSet = statmt.executeQuery("select id,login,password from users where login='" + login + "'");
+
+            exist = resultSet.next();
+            if (exist) {
+                return new User(resultSet.getInt(1),
+                        resultSet.getString(2),
+                        resultSet.getString(3));
+            } else {
+                return null;
+            }
+        }catch (SQLException e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
     public List<User> getAllUsers() throws SQLException {//извлекаю из БД полный список пользователей и выгружаю в List
