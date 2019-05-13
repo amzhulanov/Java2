@@ -66,7 +66,7 @@ public class ChatServer {
                     out.flush();
                     continue;
                 } catch (LoginException ex) {
-                    System.out.println("В сети уже есть пользователь с таким именем");
+                    System.out.println("В сети уже есть пользователь с именем: "+user.getLogin());
                     out.writeUTF(AUTH_LOGIN_FAIL_RESPONSE);
                     out.flush();
                     continue;
