@@ -3,6 +3,7 @@ package Java.ru.geekbrains.NetworkChat;
 import Java.ru.geekbrains.NetworkChat.Authorization.AuthService;
 import Java.ru.geekbrains.NetworkChat.Authorization.AuthServiceJdbcImpl;
 import Java.ru.geekbrains.NetworkChat.Exception.AuthException;
+import Java.ru.geekbrains.NetworkChat.Exception.LoginNonExistent;
 import Java.ru.geekbrains.NetworkChat.Persistance.UserRepository;
 
 import javax.security.auth.login.LoginException;
@@ -19,21 +20,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static Java.ru.geekbrains.NetworkChat.MessagePatterns.AUTH_SUCCESS_RESPONSE;
-import static Java.ru.geekbrains.NetworkChat.MessagePatterns.AUTH_FAIL_RESPONSE;
-import static Java.ru.geekbrains.NetworkChat.MessagePatterns.AUTH_LOGIN_FAIL_RESPONSE;
+import static Java.ru.geekbrains.NetworkChat.MessagePatterns.*;
 
 public class ChatServer {
 
-    public static AuthService authService;// = new AuthServiceJdbcImpl();
+    public static AuthService authService;
     //синхронизированная Мап хранит логин и всего пользователя. Синхронизация необходима для доступа к МАПе из всех потоков
     public static Map<String, ClientHandler> clientHandlerMap = Collections.synchronizedMap(new HashMap<>());
     private MessageReciever userReciever;
     public static UserRepository userRepository;
-    public static void main(String[] args) throws InterruptedException, SQLException {
+
+    public static void main(String[] args) {
 
         try {
-            Connection con= DriverManager.getConnection("jdbc:mysql://localhost:3306/network_chat?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Novosibirsk","root","root");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/network_chat?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Novosibirsk", "root", "localhost_1");
 
             userRepository = new UserRepository(con);
             authService = new AuthServiceJdbcImpl(userRepository);
@@ -46,9 +46,8 @@ public class ChatServer {
 
     }
 
-    private void start(int port) throws InterruptedException {
+    private void start(int port)  {
         Socket socket;
-        this.userReciever=userReciever;
         try (ServerSocket serverSocket = new ServerSocket(7777)) {
             System.out.println("Сервер ожидает подключения!");
             while (true) {
@@ -56,60 +55,79 @@ public class ChatServer {
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
                 User user = null;
+                String authMessage = "";
                 try {
-                    String authMessage = in.readUTF();
+                    authMessage = in.readUTF();
                     user = checkAuthentication(authMessage);
-
                 } catch (IOException ex) {
                     ex.printStackTrace();
-                }catch (SQLException ex){
-                    System.out.println("В сети уже есть пользователь с таким именем");
-                    out.writeUTF(AUTH_LOGIN_FAIL_RESPONSE);
-                    out.flush();
-                    break;
-                }catch (AuthException ex) {//Если авторизация не прошла, сообщаем об этом и закрываем сокет
+                } catch (AuthException ex) {//Если авторизация не прошла, сообщаем об этом и закрываем сокет
                     out.writeUTF(AUTH_FAIL_RESPONSE);
                     out.flush();
-                    break;
+                    continue;
                 } catch (LoginException ex) {
-
                     System.out.println("В сети уже есть пользователь с таким именем");
                     out.writeUTF(AUTH_LOGIN_FAIL_RESPONSE);
                     out.flush();
-                    break;
+                    continue;
                 }
-
-                if (user != null && authService.authUser(user)) {
-                    //если авторизация прошла, то записываем данные пользователя в МАПу
-                    System.out.println("Подключился пользователь " + user.getLogin());
-                    subscribe(user.getLogin(), socket);
-
-                    out.writeUTF(AUTH_SUCCESS_RESPONSE);
+                if (authMessage.substring(0, 4).equals("/reg")) {
+                    authService.registrationUser(user);
+                    System.out.println("Зарегистрирован пользователь: " + user.getLogin());
+                    out.writeUTF(REG_SUCCESS_RESPONSE);
                     out.flush();
-
+                    continue;
                 } else {
-                    if (user != null) {
-                        System.out.printf("Wrong authorization for user %s%n", user.getLogin());
+
+
+                    try {
+                        if (user != null && authService.authUser(user)) {
+                            //если авторизация прошла, то записываем данные пользователя в МАПу
+                            System.out.println("Подключился пользователь " + user.getLogin());
+                            subscribe(user.getLogin(), socket);
+
+                            out.writeUTF(AUTH_SUCCESS_RESPONSE);
+                            out.flush();
+                            continue;
+                        } else if (user != null) {
+                            System.out.printf("Wrong authorization for user %s%n", user.getLogin());
+                            out.writeUTF(AUTH_FAIL_RESPONSE);
+                            out.flush();
+                        }
+                    } catch (LoginNonExistent loginNonExistent) {
+                        System.out.println("Пользователь не зарегистрирован");
+                        out.writeUTF(AUTH_LOGIN_NON_EXISTENT);
+                        out.flush();
+                        continue;
                     }
-                    out.writeUTF(AUTH_FAIL_RESPONSE);
-                    out.flush();
+
                 }
+
+
+                    /*} catch (RegLoginException e) {
+                        out.writeUTF(REG_LOGIN_BUSY);
+                        out.flush();
+                        break;
+                    }*/
             }
-        } catch (IOException e) {
+
+        } catch (
+                IOException e) {
             System.out.println("Ошибка при открытии ServerSocket. " + e);
         }
+
     }
 
-    private User checkAuthentication(String authMessage) throws AuthException, LoginException, SQLException {
+    private User checkAuthentication(String authMessage) throws AuthException, LoginException {
         String[] authParts = authMessage.split(" ");
 
-        if (authParts.length != 3 || !authParts[0].equals("/auth")) {
+        if (authParts.length != 3 || (!authParts[0].equals("/auth") && !authParts[0].equals("/reg"))) {
             throw new AuthException();
         }
         if (ChatServer.loginIsBusy(authParts[1])) {
             throw new LoginException("Указанное имя уже занято");
         }
-        return new User(-1,authParts[1], authParts[2]);//передаём данные введённого пользователя
+        return new User(-1, authParts[1], authParts[2]);//передаём данные введённого пользователя
     }
 
     private void sendUserConnectedMessage(String login) throws IOException {
@@ -129,8 +147,8 @@ public class ChatServer {
         }
     }
 
-    public void subscribe(String login, Socket socket) throws IOException, InterruptedException {
-        ClientHandler clientHandler=new ClientHandler(login, socket, this);
+    public void subscribe(String login, Socket socket) throws IOException {
+        ClientHandler clientHandler = new ClientHandler(login, socket, this);
         clientHandlerMap.put(login, clientHandler);
         sendUserConnectedMessage(login);//метод отправки пользователям сообщение, с логином нового пользователя
 
@@ -143,7 +161,7 @@ public class ChatServer {
         }
     }
 
-    public static boolean loginIsBusy(String login) throws SQLException {
+    public static boolean loginIsBusy(String login) {
         //метод проверяет есть ли такой пользователь уже в сети
         if (clientHandlerMap.get(login) != null) {
             return true;//возвращает true, если пользователь в сети

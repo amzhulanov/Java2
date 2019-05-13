@@ -1,6 +1,8 @@
 package Java.ru.geekbrains.NetworkChat;
 
 import Java.ru.geekbrains.NetworkChat.Exception.AuthException;
+import Java.ru.geekbrains.NetworkChat.Exception.LoginNonExistent;
+import Java.ru.geekbrains.NetworkChat.Exception.RegPasswordException;
 
 import javax.security.auth.login.LoginException;
 import java.io.DataInputStream;
@@ -74,7 +76,7 @@ public class Network {
         });
     }
 
-    public void authorize(String login, String password) throws IOException, AuthException, LoginException {
+    public void authorize(String login, String password) throws IOException, AuthException, LoginException,LoginNonExistent {
         socket = new Socket(hostname, port);
         out = new DataOutputStream(socket.getOutputStream());
         in = new DataInputStream(socket.getInputStream());
@@ -88,8 +90,30 @@ public class Network {
 
         } else if (response.equals(AUTH_LOGIN_FAIL_RESPONSE)) {//если сработало исключение по занятости имени
             throw new LoginException();
+        } else if (response.equals(AUTH_LOGIN_NON_EXISTENT)) {//если сработало исключение по отсутствию имени
+            throw new LoginNonExistent();
         } else {
             throw new AuthException();
+
+        }
+    }
+
+    public void registration(String login, String password, String passwordRepeat) throws IOException, LoginException, RegPasswordException {
+        socket = new Socket(hostname, port);
+        out = new DataOutputStream(socket.getOutputStream());
+        in = new DataInputStream(socket.getInputStream());
+
+        if (!password.equals((passwordRepeat)) || password.isEmpty()) {//введённые пароли должны совпадать
+            throw new RegPasswordException();
+        } else if (login.isEmpty()) {//имя не должно быть пустым
+            throw new LoginException();
+        }
+        sendMessage(String.format(REG_PATTERN, login, password));
+        String response = in.readUTF();
+        if (response.equals(AUTH_SUCCESS_RESPONSE) || response.equals(String.format(CONNECTED_SEND, login))) {
+            this.login = login;
+
+            receiverThread.start();
 
         }
     }

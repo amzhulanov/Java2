@@ -1,6 +1,9 @@
 package Java.ru.geekbrains.NetworkChat.swing;
 
+import Java.ru.geekbrains.NetworkChat.Authorization.AuthService;
 import Java.ru.geekbrains.NetworkChat.Authorization.AuthServiceJdbcImpl;
+import Java.ru.geekbrains.NetworkChat.ChatServer;
+import Java.ru.geekbrains.NetworkChat.Exception.AuthException;
 import Java.ru.geekbrains.NetworkChat.Exception.RegLoginException;
 import Java.ru.geekbrains.NetworkChat.Exception.RegPasswordException;
 import Java.ru.geekbrains.NetworkChat.Network;
@@ -11,7 +14,10 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.sql.SQLException;
+
+import static Java.ru.geekbrains.NetworkChat.ChatServer.authService;
 
 public class RegistrationDialog extends JDialog {
     private Network network;
@@ -27,11 +33,13 @@ public class RegistrationDialog extends JDialog {
 
     public RegistrationDialog(Frame parent, Network network){
 
+
         super(parent, "Регистрация", true);
         this.network = network;
-        AuthServiceJdbcImpl authServiceJdbcImpl;
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints cs = new GridBagConstraints();
+
+
 
         cs.fill = GridBagConstraints.VERTICAL;
 
@@ -81,8 +89,35 @@ public class RegistrationDialog extends JDialog {
         btnRegistration.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {//Регистрация при нажатии на кнопку Зарегистрироваться
-                    AuthServiceJdbcImpl.registrationUser(tfUsername.getText(),String.valueOf(pfPassword.getPassword()),String.valueOf(pfPasswordRepeat.getPassword()));
+               // try {//Регистрация при нажатии на кнопку Зарегистрироваться
+                    //AuthService
+                    try {
+                        network.registration(tfUsername.getText(),String.valueOf(pfPassword.getPassword()),String.valueOf(pfPasswordRepeat.getPassword()));
+                    } catch(LoginException ex){
+                        JOptionPane.showMessageDialog(RegistrationDialog.this,
+                                "Имя занято",
+                                "Регистрация",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }catch(RegPasswordException ex){
+                        JOptionPane.showMessageDialog(RegistrationDialog.this,
+                                "Пароли не совпадают или пустые",
+                                "Регистрация",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }catch (IOException ex){
+                        ex.printStackTrace();
+                        /*catch(RegLoginException ex){
+                        JOptionPane.showMessageDialog(RegistrationDialog.this,
+                                "Имя не указано",
+                                "Регистрация",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }*/
+                    }
+
+                    registration = true;
+                   /* authService.registrationUser(tfUsername.getText(),String.valueOf(pfPassword.getPassword()),String.valueOf(pfPasswordRepeat.getPassword()));
                     JOptionPane.showMessageDialog(RegistrationDialog.this,
                             "Вы успешно зарегистрировались",
                             "Регистрация",
@@ -106,7 +141,7 @@ public class RegistrationDialog extends JDialog {
                             "Регистрация",
                             JOptionPane.ERROR_MESSAGE);
                     return;
-                }
+                }*/
 
                 dispose();//закрываю окно регистрации
             }
