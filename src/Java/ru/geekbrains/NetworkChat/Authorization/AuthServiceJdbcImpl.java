@@ -28,9 +28,7 @@ public class AuthServiceJdbcImpl implements AuthService {
 
     @Override
     public void registrationUser(User user)  {
-        String login = user.getLogin();
-        String password=user.getPassword();
-        userRepository.insert(login,password);
+        userRepository.insert(user);
      /*   if (userRepository.findByLogin(login)==null){ //имени не должно быть в базе
                userRepository.insert(login, password);
                     return true;

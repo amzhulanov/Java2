@@ -23,11 +23,11 @@ public class UserRepository {
         System.out.println("Table ok.");
     }
 
-    public void insert(String login, String password) { //добавляю нового пользователя
+    public void insert(User user) { //добавляю нового пользователя
         try {
             PreparedStatement preparedStatement=conn.prepareStatement("insert into users (login,password) values(?,?)");
-            preparedStatement.setString(1,login);
-            preparedStatement.setString(2,password);
+            preparedStatement.setString(1,user.getLogin());
+            preparedStatement.setString(2,user.getPassword());
             preparedStatement.execute();
             preparedStatement.close();
         } catch (SQLException e) {
