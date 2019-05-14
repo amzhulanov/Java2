@@ -28,10 +28,10 @@ public class ChatServer {
     //синхронизированная Мап хранит логин и всего пользователя. Синхронизация необходима для доступа к МАПе из всех потоков
     public static Map<String, ClientHandler> clientHandlerMap = Collections.synchronizedMap(new HashMap<>());
     private MessageReciever userReciever;
-    public static UserRepository userRepository;
+
 
     public static void main(String[] args) {
-
+         UserRepository userRepository;
         try {
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/network_chat?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Novosibirsk", "root", "localhost_1");
 
