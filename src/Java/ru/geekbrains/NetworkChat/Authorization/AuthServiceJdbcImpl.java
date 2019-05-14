@@ -6,7 +6,7 @@ import Java.ru.geekbrains.NetworkChat.User;
 
 public class AuthServiceJdbcImpl implements AuthService {
 
-    private static UserRepository userRepository;
+    private UserRepository userRepository;
 
     public AuthServiceJdbcImpl(UserRepository userRepository) {
 
