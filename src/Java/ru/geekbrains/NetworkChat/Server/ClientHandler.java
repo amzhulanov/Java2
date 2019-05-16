@@ -22,7 +22,6 @@ public class ClientHandler {
 
     private final Thread handleThread;
     private ChatServer chatServer;
-    public HistoryMessage historyMessage;
 
     //СlientHandler создаётся для каждого клиента
     public ClientHandler(String login, Socket socket, ChatServer chatServer) throws IOException {
@@ -37,7 +36,6 @@ public class ClientHandler {
 
             @Override
             public void run() {
-                historyMessage=new HistoryMessage();
                 while (!Thread.currentThread().isInterrupted()) {
 
                     try {

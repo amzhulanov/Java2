@@ -7,7 +7,7 @@ import java.awt.*;
 import java.time.format.DateTimeFormatter;
 
 public class TextMessageCellRenderer extends JPanel implements ListCellRenderer<TextMessage> {
-    private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+    public static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm:ss");
     private final JLabel userName;
     private final JTextArea messageText;
     private final JLabel created;
@@ -43,7 +43,7 @@ public class TextMessageCellRenderer extends JPanel implements ListCellRenderer<
     public Component getListCellRendererComponent(JList<? extends TextMessage> list, TextMessage value, int index,
                                                   boolean isSelected, boolean cellHasFocus) {
         setBackground(list.getBackground());
-        created.setText(value.getCreated().format(timeFormatter));
+        created.setText(value.getCreated().format(dateTimeFormatter));
         userName.setOpaque(true);
         userName.setText(value.getUserFrom());
         messageText.setText(value.getText());

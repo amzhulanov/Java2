@@ -45,7 +45,6 @@ public class Network {
                             messageReciever.submitMessage(textMessage);
                             //сохраняю текст сообщения в файл получателя
                             historyMessage.writeMessage(textMessage.getCreated(),textMessage.getUserTo(),textMessage.getUserFrom(),textMessage.getText());//время, имя файла, от кого, текст
-                            System.out.printf("Считываю в потоке  Время -%tD, Имя файла - %s, От кого - %s",textMessage.getCreated(),textMessage.getUserTo(),textMessage.getUserFrom());
                             continue;
                         }
                         String login = parseConnectedMessage(text);
@@ -80,7 +79,7 @@ public class Network {
         });
     }
 
-    public void authorize(String login, String password) throws IOException, AuthException, LoginException,LoginNonExistent {
+    public void authorize(String login, String password) throws IOException, AuthException, LoginException {
         socket = new Socket(hostname, port);
         out = new DataOutputStream(socket.getOutputStream());
         in = new DataInputStream(socket.getInputStream());
@@ -127,7 +126,6 @@ public class Network {
     public void sendTextMessage(TextMessage message) {//метод используется при отправке сообщения из чата-клиента серверу
         try {//сохраняю сообщение в файл отправителя, непосредственно перед отправкой
             historyMessage.writeMessage(message.getCreated(),message.getUserFrom(),message.getUserFrom(),message.getText());//время, имя файла, от кого, текст
-            System.out.printf("Из sendMessage/ Время -%tD, Имя файла - %s, От кого - %s",message.getCreated(),message.getUserFrom(),message.getUserFrom());
         } catch (IOException e) {
             e.printStackTrace();
         }
