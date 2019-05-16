@@ -48,16 +48,20 @@ public class HistoryMessage {
         Map treeMap=new TreeMap<>();
         File historyFile = new File(PATH, "history_" + login + ".txt");
 
-        int i=-1;
+        int countRow=-1;//переменная для подсчёта строк, просто дял удобства
         try (BufferedReader reader = new BufferedReader(new FileReader(historyFile))) {
             while (reader.ready()) {
-                treeMap.put(++i,reader.readLine());
+                treeMap.put(++countRow,reader.readLine());
             }
         }
-        int count=1;
+
         TextMessage textMessage;
-        while (count<100&&i>=0){
-                       textMessage = parseHistoryFile(treeMap.get(i--).toString());
+        int rowOut=0; //чтобы в окне чата строки шли по дате от старых к новым
+        if (countRow>=100){//определяю с какой строки выводить сообщение. Например, если всего 115 строк, то вывод пойдёт с 15-ой строки
+            rowOut=countRow-100;
+        }
+        for (int count=rowOut;rowOut<=countRow;rowOut++){//вывод сообщений в окно пользователя
+                       textMessage = parseHistoryFile(treeMap.get(count).toString());
             messageReciever.submitMessage(textMessage);
             count++;
         }
