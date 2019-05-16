@@ -1,12 +1,7 @@
-package Java.ru.geekbrains.NetworkChat.swing;
+package Java.ru.geekbrains.NetworkChat.Client.swing;
 
-import Java.ru.geekbrains.NetworkChat.Authorization.AuthService;
-import Java.ru.geekbrains.NetworkChat.Authorization.AuthServiceJdbcImpl;
-import Java.ru.geekbrains.NetworkChat.ChatServer;
-import Java.ru.geekbrains.NetworkChat.Exception.AuthException;
-import Java.ru.geekbrains.NetworkChat.Exception.RegLoginException;
-import Java.ru.geekbrains.NetworkChat.Exception.RegPasswordException;
-import Java.ru.geekbrains.NetworkChat.Network;
+import Java.ru.geekbrains.NetworkChat.Server.Exception.RegPasswordException;
+import Java.ru.geekbrains.NetworkChat.Client.Network;
 
 import javax.security.auth.login.LoginException;
 import javax.swing.*;
@@ -15,9 +10,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.sql.SQLException;
-
-import static Java.ru.geekbrains.NetworkChat.ChatServer.authService;
 
 public class RegistrationDialog extends JDialog {
     private Network network;

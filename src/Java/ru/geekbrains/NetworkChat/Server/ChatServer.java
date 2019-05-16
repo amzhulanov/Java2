@@ -1,10 +1,12 @@
-package Java.ru.geekbrains.NetworkChat;
+package Java.ru.geekbrains.NetworkChat.Server;
 
-import Java.ru.geekbrains.NetworkChat.Authorization.AuthService;
-import Java.ru.geekbrains.NetworkChat.Authorization.AuthServiceJdbcImpl;
-import Java.ru.geekbrains.NetworkChat.Exception.AuthException;
-import Java.ru.geekbrains.NetworkChat.Exception.LoginNonExistent;
-import Java.ru.geekbrains.NetworkChat.Persistance.UserRepository;
+import Java.ru.geekbrains.NetworkChat.Server.Authorization.AuthService;
+import Java.ru.geekbrains.NetworkChat.Server.Authorization.AuthServiceJdbcImpl;
+import Java.ru.geekbrains.NetworkChat.Client.MessageReciever;
+import Java.ru.geekbrains.NetworkChat.Client.TextMessage;
+import Java.ru.geekbrains.NetworkChat.Server.Exception.AuthException;
+import Java.ru.geekbrains.NetworkChat.Server.Exception.LoginNonExistent;
+import Java.ru.geekbrains.NetworkChat.Server.Persistance.UserRepository;
 
 import javax.security.auth.login.LoginException;
 import java.io.DataInputStream;
@@ -20,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static Java.ru.geekbrains.NetworkChat.MessagePatterns.*;
+import static Java.ru.geekbrains.NetworkChat.Client.MessagePatterns.*;
 
 public class ChatServer {
 
@@ -37,6 +39,7 @@ public class ChatServer {
 
             userRepository = new UserRepository(con);
             authService = new AuthServiceJdbcImpl(userRepository);
+            System.out.println("подключился к БД");
         } catch (SQLException e) {
             e.printStackTrace();
             return;

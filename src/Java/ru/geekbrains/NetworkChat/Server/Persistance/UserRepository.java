@@ -1,6 +1,6 @@
-package Java.ru.geekbrains.NetworkChat.Persistance;
+package Java.ru.geekbrains.NetworkChat.Server.Persistance;
 
-import Java.ru.geekbrains.NetworkChat.User;
+import Java.ru.geekbrains.NetworkChat.Server.User;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -21,6 +21,7 @@ public class UserRepository {
         }
         statmt.execute("CREATE TABLE if not exists users (id int primary key, login varchar(25), password varchar(25));");
         System.out.println("Table ok.");
+        //statmt.close();
     }
 
     public void insert(User user) { //добавляю нового пользователя

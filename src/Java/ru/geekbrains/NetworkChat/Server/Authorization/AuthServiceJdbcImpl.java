@@ -1,8 +1,8 @@
-package Java.ru.geekbrains.NetworkChat.Authorization;
+package Java.ru.geekbrains.NetworkChat.Server.Authorization;
 
-import Java.ru.geekbrains.NetworkChat.Exception.LoginNonExistent;
-import Java.ru.geekbrains.NetworkChat.Persistance.UserRepository;
-import Java.ru.geekbrains.NetworkChat.User;
+import Java.ru.geekbrains.NetworkChat.Server.Exception.LoginNonExistent;
+import Java.ru.geekbrains.NetworkChat.Server.Persistance.UserRepository;
+import Java.ru.geekbrains.NetworkChat.Server.User;
 
 public class AuthServiceJdbcImpl implements AuthService {
 

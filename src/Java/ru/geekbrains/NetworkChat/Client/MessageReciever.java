@@ -1,4 +1,6 @@
-package Java.ru.geekbrains.NetworkChat;
+package Java.ru.geekbrains.NetworkChat.Client;
+
+import Java.ru.geekbrains.NetworkChat.Client.TextMessage;
 
 import java.util.Set;
 

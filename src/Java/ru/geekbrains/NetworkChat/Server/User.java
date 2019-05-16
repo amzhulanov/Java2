@@ -1,4 +1,4 @@
-package Java.ru.geekbrains.NetworkChat;
+package Java.ru.geekbrains.NetworkChat.Server;
 
 public class User {
     private int id;

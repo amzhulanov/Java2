@@ -1,12 +1,10 @@
-package Java.ru.geekbrains.NetworkChat.swing;
+package Java.ru.geekbrains.NetworkChat.Client.swing;
 
-import Java.ru.geekbrains.NetworkChat.ChatServer;
-import Java.ru.geekbrains.NetworkChat.MessageReciever;
-import Java.ru.geekbrains.NetworkChat.Network;
-import Java.ru.geekbrains.NetworkChat.TextMessage;
+import Java.ru.geekbrains.NetworkChat.Client.MessageReciever;
+import Java.ru.geekbrains.NetworkChat.Client.Network;
+import Java.ru.geekbrains.NetworkChat.Client.TextMessage;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
@@ -14,7 +12,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import java.util.Set;
 
 public class ViewWindow extends JFrame implements MessageReciever {

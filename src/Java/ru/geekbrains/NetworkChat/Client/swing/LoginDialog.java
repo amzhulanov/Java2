@@ -1,9 +1,9 @@
-package Java.ru.geekbrains.NetworkChat.swing;
+package Java.ru.geekbrains.NetworkChat.Client.swing;
 
 
-import Java.ru.geekbrains.NetworkChat.Exception.AuthException;
-import Java.ru.geekbrains.NetworkChat.Exception.LoginNonExistent;
-import Java.ru.geekbrains.NetworkChat.Network;
+import Java.ru.geekbrains.NetworkChat.Server.Exception.AuthException;
+import Java.ru.geekbrains.NetworkChat.Server.Exception.LoginNonExistent;
+import Java.ru.geekbrains.NetworkChat.Client.Network;
 
 import javax.security.auth.login.LoginException;
 import javax.swing.*;

@@ -1,7 +1,8 @@
-package Java.ru.geekbrains.NetworkChat;
+package Java.ru.geekbrains.NetworkChat.Client;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
+import java.util.Date;
 
 public class TextMessage {
     private String userFrom;
@@ -15,6 +16,12 @@ public class TextMessage {
         this.text = text;
     }
 
+    public TextMessage(Date created, String userFrom, String text) {
+        this.created = LocalDateTime.ofInstant(created.toInstant(), ZoneId.systemDefault());;
+        this.userFrom = userFrom;
+        this.text = text;
+    }
+
     private LocalDateTime created;
 
 
@@ -24,11 +31,20 @@ public class TextMessage {
     }
 
     public String getText() {
+
         return text;
     }
 
     public String getUserTo() {
         return userTo;
+    }
+
+    public void setCreated(LocalDateTime created) {
+        this.created = created;
+    }
+
+    public void setUserTo(String userTo) {
+        this.userTo = userTo;
     }
 
     public void setUserFrom(String userFrom) {

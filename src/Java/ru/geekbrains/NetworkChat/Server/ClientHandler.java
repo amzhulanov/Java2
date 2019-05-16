@@ -1,17 +1,17 @@
-package Java.ru.geekbrains.NetworkChat;
+package Java.ru.geekbrains.NetworkChat.Server;
 
 
-import Java.ru.geekbrains.NetworkChat.swing.RegistrationDialog;
+import Java.ru.geekbrains.NetworkChat.Client.HistoryMessage;
+import Java.ru.geekbrains.NetworkChat.Client.TextMessage;
 
-import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Set;
 
-import static Java.ru.geekbrains.NetworkChat.MessagePatterns.parseTextMessageRegx;
-import static Java.ru.geekbrains.NetworkChat.MessagePatterns.*;
+import static Java.ru.geekbrains.NetworkChat.Client.MessagePatterns.parseTextMessageRegx;
+import static Java.ru.geekbrains.NetworkChat.Client.MessagePatterns.*;
 
 public class ClientHandler {
     private final String login;
@@ -22,6 +22,7 @@ public class ClientHandler {
 
     private final Thread handleThread;
     private ChatServer chatServer;
+    public HistoryMessage historyMessage;
 
     //СlientHandler создаётся для каждого клиента
     public ClientHandler(String login, Socket socket, ChatServer chatServer) throws IOException {
@@ -31,9 +32,12 @@ public class ClientHandler {
         this.out = new DataOutputStream(socket.getOutputStream());
         this.chatServer = chatServer;
 
+
         this.handleThread = new Thread(new Runnable() {//поток для обработки входящих на сервер сообщений
+
             @Override
             public void run() {
+                historyMessage=new HistoryMessage();
                 while (!Thread.currentThread().isInterrupted()) {
 
                     try {
@@ -50,6 +54,7 @@ public class ClientHandler {
                             System.out.println("Показываю сообщение о занятости логина");
                         } */else if (msg != null) {
                             chatServer.sendMessage(message);//userTo,userFrom,text
+                           // historyMessage.writeMessage(message.getCreated(),message.getUserFrom(),message.getUserTo(),message.getText());
 
                         }
                     } catch (IOException ex) {

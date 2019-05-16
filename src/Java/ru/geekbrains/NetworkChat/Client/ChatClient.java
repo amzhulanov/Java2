@@ -1,6 +1,6 @@
-package Java.ru.geekbrains.NetworkChat;
+package Java.ru.geekbrains.NetworkChat.Client;
 
-import Java.ru.geekbrains.NetworkChat.swing.ViewWindow;
+import Java.ru.geekbrains.NetworkChat.Client.swing.ViewWindow;
 
 import javax.swing.*;
 

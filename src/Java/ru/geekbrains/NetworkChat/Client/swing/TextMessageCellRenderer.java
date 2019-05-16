@@ -1,6 +1,6 @@
-package Java.ru.geekbrains.NetworkChat.swing;
+package Java.ru.geekbrains.NetworkChat.Client.swing;
 
-import Java.ru.geekbrains.NetworkChat.TextMessage;
+import Java.ru.geekbrains.NetworkChat.Client.TextMessage;
 
 import javax.swing.*;
 import java.awt.*;

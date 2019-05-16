@@ -1,5 +1,9 @@
-package Java.ru.geekbrains.NetworkChat;
+package Java.ru.geekbrains.NetworkChat.Client;
 
+import Java.ru.geekbrains.NetworkChat.Client.TextMessage;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -48,6 +52,16 @@ public final class MessagePatterns {
         String[] parts = text.split(" ", 3);
         if (parts.length == 3 && parts[0].equals(MESSAGE_PREFIX)) {
             return new TextMessage(parts[1], userTo, parts[2]);
+        } else {
+            return null;
+        }
+    }
+    public static TextMessage parseHistoryFile(String text)   {
+        String[] parts = text.split(" ", 5);
+        if (parts.length == 5 ) {
+            System.out.printf("parts[0]=%s, parts[2]=%s,parts[4]=%s",parts[0], parts[2],parts[4]);
+                return new TextMessage(parts[0], parts[2],parts[4]);
+
         } else {
             return null;
         }
