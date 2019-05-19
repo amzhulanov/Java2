@@ -25,8 +25,6 @@ public class Network {
     private String hostname;
     private int port;
     private MessageReciever messageReciever;
-    private HistoryMessage historyMessage=new HistoryMessage();
-
     private Thread receiverThread; //поток для считывания сообщения и отображения на форме
 
     //метод обрабатывает входящее на сокет сообщение
@@ -43,8 +41,6 @@ public class Network {
                         TextMessage textMessage = parseTextMessageRegx(text);//Разбиваю полученный текст. Определяю отправителя, получателя и текст
                         if (textMessage != null) {
                             messageReciever.submitMessage(textMessage);
-                            //сохраняю текст сообщения в файл получателя
-                            historyMessage.writeMessage(textMessage.getCreated(),textMessage.getUserTo(),textMessage.getUserFrom(),textMessage.getText());//время, имя файла, от кого, текст
                             continue;
                         }
                         String login = parseConnectedMessage(text);
@@ -88,9 +84,6 @@ public class Network {
         String response = in.readUTF();
         if (response.equals(AUTH_SUCCESS_RESPONSE) || response.equals(String.format(CONNECTED_SEND, login))) {
             this.login = login;
-
-            historyMessage.createFile(historyMessage.createFolder(),login);
-            historyMessage.readMessage(login,messageReciever);
             receiverThread.start();
 
         } else if (response.equals(AUTH_LOGIN_FAIL_RESPONSE)) {//если сработало исключение по занятости имени
@@ -117,20 +110,12 @@ public class Network {
         String response = in.readUTF();
         if (response.equals(AUTH_SUCCESS_RESPONSE) || response.equals(String.format(CONNECTED_SEND, login))) {
             this.login = login;
-
             receiverThread.start();
-
         }
     }
 
     public void sendTextMessage(TextMessage message) {//метод используется при отправке сообщения из чата-клиента серверу
-        try {//сохраняю сообщение в файл отправителя, непосредственно перед отправкой
-            historyMessage.writeMessage(message.getCreated(),message.getUserFrom(),message.getUserFrom(),message.getText());//время, имя файла, от кого, текст
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         sendMessage(String.format(MESSAGE_SEND_PATTERN, message.getUserTo(), message.getUserFrom(), message.getText()));
-
     }
 
     private void sendMessage(String msg) { //отправляет сформированную строку строчку через сеть

@@ -1,5 +1,7 @@
 package Java.ru.geekbrains.NetworkChat.Client.swing;
 
+import Java.ru.geekbrains.NetworkChat.Client.ChatHistory.ChatHistory;
+import Java.ru.geekbrains.NetworkChat.Client.ChatHistory.ChatHistoryImpl;
 import Java.ru.geekbrains.NetworkChat.Client.MessageReciever;
 import Java.ru.geekbrains.NetworkChat.Client.Network;
 import Java.ru.geekbrains.NetworkChat.Client.TextMessage;
@@ -12,7 +14,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.util.Set;
+import java.util.List;
 
 public class ViewWindow extends JFrame implements MessageReciever {
     private final JTextField message, nick;
@@ -25,12 +29,13 @@ public class ViewWindow extends JFrame implements MessageReciever {
     private final Network network;
     private final DefaultListModel<String> listUserModel;
     private final JList<String> listUser;
+    private ChatHistory chatHistory;
 
-    public  ViewWindow() {
+    public ViewWindow() {
         setTitle("ChatClient");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setBounds(200, 200, 500, 500);
-         mainPanel = new JPanel();
+        mainPanel = new JPanel();
 
         buttonEnter = new JButton("Отправить");
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
@@ -42,7 +47,7 @@ public class ViewWindow extends JFrame implements MessageReciever {
         jList.setCellRenderer(messageCellRenderer);
 
         message = new JTextField("Введите сообщение");//текстовое поле для ввода сообщения
-        nick = new JTextField("Имя пользователя",5);//поле для ввода имени пользователя получателя сообщения
+        nick = new JTextField("Имя пользователя", 5);//поле для ввода имени пользователя получателя сообщения
         Font f = nick.getFont();
         nick.setFont(f.deriveFont(f.getStyle() | Font.BOLD));
 
@@ -61,16 +66,20 @@ public class ViewWindow extends JFrame implements MessageReciever {
                     jListModel.add(jListModel.getSize(), msg);
                     message.setText(null);
                     network.sendTextMessage(msg);//отправка сообщения
+                    chatHistory.writeMessage(msg);//записываю сообщение в файл истории
                 } else {
-                    System.out.println("Необходимо указать Имя пользователя и написать текст сообщения");
+                    JOptionPane.showMessageDialog(ViewWindow.this,
+                            "Ошибка",
+                            "Не выбран пользователь",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }
         };
         message.addActionListener(actionListener);
         buttonEnter.addActionListener(actionListener);
 
-        mainPanel.add(nick,BorderLayout.WEST);
-        mainPanel.add(message,BorderLayout.CENTER);
+        mainPanel.add(nick, BorderLayout.WEST);
+        mainPanel.add(message, BorderLayout.CENTER);
         mainPanel.add(buttonEnter, BorderLayout.EAST);
 
         add(mainPanel, BorderLayout.SOUTH);
@@ -82,7 +91,7 @@ public class ViewWindow extends JFrame implements MessageReciever {
         add(listUser, BorderLayout.WEST);
 
         listUser.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        ListSelectionListener actionListenerJList=new ListSelectionListener() {//проверяю выбор пользователя в списке
+        ListSelectionListener actionListenerJList = new ListSelectionListener() {//проверяю выбор пользователя в списке
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (!listUser.getValueIsAdjusting()) { // Игнорируем событие mouseDown
@@ -104,17 +113,35 @@ public class ViewWindow extends JFrame implements MessageReciever {
             System.exit(0);
         }
         this.network.requestConnectedUserList();
+        try {//запускаю сервис записи сообщений в файл истории
+            this.chatHistory = new ChatHistoryImpl(network.getLogin());
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(ViewWindow.this,
+                    "Ошибка",
+                    "Не запускается сервис истории сообщений",
+                    JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
+        }
+        //загружаю последние N сообщений
+        List<TextMessage> historyMessage = this.chatHistory.readMessage(5);
+        for (TextMessage msg : historyMessage) {
+            jListModel.add(jListModel.size(), msg);
+        }
+
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent event) {
-                    if (network != null) {
-                        userDisconnected(network.getLogin());
+                if (network != null) {
+                    userDisconnected(network.getLogin());
 
-                            network.close();
-
+                    network.close();
+                    if (chatHistory != null) {
+                        chatHistory.flush();
                     }
-                    super.windowClosing(event);
                 }
+                super.windowClosing(event);
+            }
         });
         setTitle("ChatClient: " + network.getLogin());
     }
@@ -127,9 +154,11 @@ public class ViewWindow extends JFrame implements MessageReciever {
             public void run() {
                 jListModel.add(jListModel.size(), message);//Выводим сообщение на экран клиента
                 jList.ensureIndexIsVisible(jListModel.size() - 1);
+                chatHistory.writeMessage(message);//записываю сообщение в файл истории
             }
         });
     }
+
     @Override
     public void userConnected(String login) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -142,6 +171,7 @@ public class ViewWindow extends JFrame implements MessageReciever {
             }
         });
     }
+
     @Override
     public void userDisconnected(String login) {
         SwingUtilities.invokeLater(new Runnable() {

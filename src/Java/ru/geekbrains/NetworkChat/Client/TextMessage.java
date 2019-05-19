@@ -15,9 +15,9 @@ public class TextMessage {
         this.text = text;
     }
 
-    public TextMessage(LocalDateTime created, String userFrom, String text) {
+    public TextMessage(LocalDateTime created, String userTo,String userFrom, String text) {
         this.created = created;
-
+        this.userTo=userTo;
         this.userFrom = userFrom;
         this.text = text;
     }

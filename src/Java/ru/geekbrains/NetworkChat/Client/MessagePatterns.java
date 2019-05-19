@@ -19,7 +19,7 @@ public final class MessagePatterns {
 
 
     public static final String DISCONNECTED = "/disconnect";
-    public static final String DISCONNECTED_SEND = DISCONNECTED +" %s";
+    public static final String DISCONNECTED_SEND = DISCONNECTED + " %s";
 
     public static final String CONNECTED = "/connected";
     public static final String CONNECTED_SEND = CONNECTED + " %s";
@@ -27,7 +27,7 @@ public final class MessagePatterns {
     public static final String USER_LIST_TAG = "/user_list";
     public static final String USER_LIST_RESPONSE = USER_LIST_TAG + " %s";
 
-    public static final String REQUEST="/req";
+    public static final String REQUEST = "/req";
 
     public static final String MESSAGE_PREFIX = "/w";
     public static final String MESSAGE_SEND_PATTERN = MESSAGE_PREFIX + " %s %s %s";
@@ -35,8 +35,8 @@ public final class MessagePatterns {
     public static final Pattern MESSAGE_REC_PATTERN = Pattern.compile("^/w (\\w+) (.\\w+) (.+)", Pattern.MULTILINE);
 
     public static final String REG_PATTERN = "/reg %s %s";
-    public static final String REG_LOGIN_BUSY="/reg_login_busy";
-    public static final String REG_SUCCESS_RESPONSE="/reg successful";
+    public static final String REG_LOGIN_BUSY = "/reg_login_busy";
+    public static final String REG_SUCCESS_RESPONSE = "/reg successful";
 
 
     public static TextMessage parseTextMessageRegx(String text) {
@@ -56,10 +56,12 @@ public final class MessagePatterns {
             return null;
         }
     }
-    public static TextMessage parseHistoryFile(String text)  {
-        String[] parts = text.split(" ", 6);
-        if (parts.length == 6 ) {
-            return new TextMessage(LocalDateTime.parse((parts[0]+" "+parts[1]),dateTimeFormatter), parts[3],parts[5]);
+
+    public static TextMessage parseHistoryFile(String text) {
+        String[] parts = text.split("\t", 6);
+        if (parts.length == 4) {
+            return new TextMessage(LocalDateTime.parse(parts[0], dateTimeFormatter), parts[1], parts[2], parts[3]);
+            // created,  userTo, userFrom,  text
         } else {
             return null;
         }
@@ -87,7 +89,7 @@ public final class MessagePatterns {
         String[] parts = text.split(" ");
         if (parts.length >= 1 && parts[0].equals(USER_LIST_TAG)) {
             Set<String> users = new HashSet<>();
-            for (int i=1; i<parts.length; i++) {
+            for (int i = 1; i < parts.length; i++) {
                 users.add(parts[i]);
             }
             return users;
