@@ -4,6 +4,7 @@ import Java.ru.geekbrains.NetworkChat.Server.ChatServer;
 import Java.ru.geekbrains.NetworkChat.Server.Exception.AuthException;
 import Java.ru.geekbrains.NetworkChat.Server.Exception.LoginNonExistent;
 import Java.ru.geekbrains.NetworkChat.Server.Exception.RegPasswordException;
+import Java.ru.geekbrains.NetworkChat.Server.Exception.ResourceException;
 
 import javax.security.auth.login.LoginException;
 import java.io.DataInputStream;
@@ -75,13 +76,15 @@ public class Network {
         });
     }
 
-    public void authorize(String login, String password) throws IOException, AuthException, LoginException {
+    public void authorize(String login, String password) throws IOException, AuthException, LoginException,ResourceException {
         socket = new Socket(hostname, port);
         out = new DataOutputStream(socket.getOutputStream());
         in = new DataInputStream(socket.getInputStream());
 
         sendMessage(String.format(AUTH_PATTERN, login, password));
         String response = in.readUTF();
+
+
         if (response.equals(AUTH_SUCCESS_RESPONSE) || response.equals(String.format(CONNECTED_SEND, login))) {
             this.login = login;
             receiverThread.start();
@@ -90,9 +93,8 @@ public class Network {
             throw new LoginException();
         } else if (response.equals(AUTH_LOGIN_NON_EXISTENT)) {//если сработало исключение по отсутствию имени
             throw new LoginNonExistent();
-        } else {
-            throw new AuthException();
-
+        }else if (response.equals(NOT_THREAD)) {//если сработало исключение по отсутствию имени
+            throw new ResourceException();
         }
     }
 
@@ -137,6 +139,7 @@ public class Network {
 
     public void close() {
         this.receiverThread.interrupt();
+
         sendMessage(DISCONNECTED);
     }
 }

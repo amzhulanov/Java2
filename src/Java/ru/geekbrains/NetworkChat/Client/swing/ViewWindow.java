@@ -18,6 +18,9 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.List;
 
+import static Java.ru.geekbrains.NetworkChat.Server.ChatServer.MAX_THREAD;
+import static Java.ru.geekbrains.NetworkChat.Server.ChatServer.countCurrentThread;
+
 public class ViewWindow extends JFrame implements MessageReciever {
     private final JTextField message, nick;
     private final TextMessageCellRenderer messageCellRenderer;
@@ -61,16 +64,21 @@ public class ViewWindow extends JFrame implements MessageReciever {
             public void actionPerformed(ActionEvent event) {
                 String text = message.getText().trim();
                 String userTo = nick.getText().trim();
-                if (text.length() > 0 && userTo.length() > 0) {//проверяем, что сообщение не пустое и указан получатель
+                if (text.length() > 0 && userTo.length() > 0 && countCurrentThread<MAX_THREAD) {//проверяем, что сообщение не пустое и указан получатель
                     TextMessage msg = new TextMessage(userTo, network.getLogin(), text);//сообщение, которое отправляет клиент с указанием кому именно
                     jListModel.add(jListModel.getSize(), msg);
                     message.setText(null);
                     network.sendTextMessage(msg);//отправка сообщения
                     chatHistory.writeMessage(msg);//записываю сообщение в файл истории
-                } else {
+                } else if (userTo==null){
                     JOptionPane.showMessageDialog(ViewWindow.this,
                             "Ошибка",
                             "Не выбран пользователь",
+                            JOptionPane.ERROR_MESSAGE);
+                } else if (text==null){
+                    JOptionPane.showMessageDialog(ViewWindow.this,
+                            "Ошибка",
+                            "Нельзя отправить пустое сообщение",
                             JOptionPane.ERROR_MESSAGE);
                 }
             }

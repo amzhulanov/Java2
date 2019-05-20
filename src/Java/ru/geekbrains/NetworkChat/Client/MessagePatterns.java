@@ -20,6 +20,9 @@ public final class MessagePatterns {
 
     public static final String DISCONNECTED = "/disconnect";
     public static final String DISCONNECTED_SEND = DISCONNECTED + " %s";
+    public static final String NOT_THREAD = "/not_thread";
+
+
 
     public static final String CONNECTED = "/connected";
     public static final String CONNECTED_SEND = CONNECTED + " %s";

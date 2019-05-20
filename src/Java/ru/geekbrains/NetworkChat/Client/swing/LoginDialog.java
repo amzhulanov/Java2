@@ -4,6 +4,7 @@ package Java.ru.geekbrains.NetworkChat.Client.swing;
 import Java.ru.geekbrains.NetworkChat.Server.Exception.AuthException;
 import Java.ru.geekbrains.NetworkChat.Server.Exception.LoginNonExistent;
 import Java.ru.geekbrains.NetworkChat.Client.Network;
+import Java.ru.geekbrains.NetworkChat.Server.Exception.ResourceException;
 
 import javax.security.auth.login.LoginException;
 import javax.swing.*;
@@ -98,8 +99,13 @@ public class LoginDialog extends JDialog {
                             "Авторизация",
                             JOptionPane.ERROR_MESSAGE);
                     return;
+                }catch(ResourceException ex){
+                    JOptionPane.showMessageDialog(LoginDialog.this,
+                            "Все ресурсы сервера заняты. Попробуйте подключиться позже",
+                            "Сервер занят",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
-
                 dispose();//закрываю окно ввода логина/пароля
             }
         });

@@ -8,9 +8,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static Java.ru.geekbrains.NetworkChat.Client.MessagePatterns.parseTextMessageRegx;
 import static Java.ru.geekbrains.NetworkChat.Client.MessagePatterns.*;
+import static Java.ru.geekbrains.NetworkChat.Server.ChatServer.*;
 
 public class ClientHandler {
     private final String login;
@@ -19,8 +22,15 @@ public class ClientHandler {
     private final DataOutputStream out;
     private final DataInputStream in;
 
-    private final Thread handleThread;
+
+    //
+
+    //private final Thread handleThread;
     private ChatServer chatServer;
+
+
+
+    private final ExecutorService executorService = Executors.newFixedThreadPool(MAX_THREAD);
 
     //СlientHandler создаётся для каждого клиента
     public ClientHandler(String login, Socket socket, ChatServer chatServer) throws IOException {
@@ -31,7 +41,8 @@ public class ClientHandler {
         this.chatServer = chatServer;
 
 
-        this.handleThread = new Thread(new Runnable() {//поток для обработки входящих на сервер сообщений
+        executorService.execute(new Runnable() {//поток для обработки входящих на сервер сообщений
+        //this.handleThread = new Thread(new Runnable() {//поток для обработки входящих на сервер сообщений
 
             @Override
             public void run() {
@@ -61,8 +72,11 @@ public class ClientHandler {
                 }
             }
         });
+        countCurrentThread++;
+        System.out.printf("Всего открыто потоков: %s из %s воможных",countCurrentThread, MAX_THREAD);
         this.chatServer = chatServer;
-        this.handleThread.start();
+
+        //this.handleThread.start();
     }
 
     public String getLogin() {
