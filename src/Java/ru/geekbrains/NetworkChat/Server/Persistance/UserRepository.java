@@ -3,8 +3,7 @@ package Java.ru.geekbrains.NetworkChat.Server.Persistance;
 import Java.ru.geekbrains.NetworkChat.Server.User;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class UserRepository {
     private final Connection conn;

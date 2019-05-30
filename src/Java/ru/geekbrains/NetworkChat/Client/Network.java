@@ -91,9 +91,12 @@ public class Network {
 
         } else if (response.equals(AUTH_LOGIN_FAIL_RESPONSE)) {//если сработало исключение по занятости имени
             throw new LoginException();
-        } else if (response.equals(AUTH_LOGIN_NON_EXISTENT)) {//если сработало исключение по отсутствию имени
+        }else if (response.equals(AUTH_FAIL_RESPONSE)) {
+            throw new AuthException();
+        }
+        else if (response.equals(AUTH_LOGIN_NON_EXISTENT)) {//если сработало исключение по отсутствию имени
             throw new LoginNonExistent();
-        }else if (response.equals(NOT_THREAD)) {//если сработало исключение по отсутствию имени
+        }else if (response.equals(NOT_THREAD)) {//если сработало исключение по отсутствию ресурсов
             throw new ResourceException();
         }
     }

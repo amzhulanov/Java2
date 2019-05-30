@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static Java.ru.geekbrains.NetworkChat.Client.MessagePatterns.parseTextMessageRegx;
 import static Java.ru.geekbrains.NetworkChat.Client.MessagePatterns.*;
@@ -22,28 +22,24 @@ public class ClientHandler {
     private final DataOutputStream out;
     private final DataInputStream in;
 
-
-    //
-
-    //private final Thread handleThread;
     private ChatServer chatServer;
 
-
-
-    private final ExecutorService executorService = Executors.newFixedThreadPool(MAX_THREAD);
+    private final ExecutorService executorService;
+    private Future<?> handlerFuture;
 
     //СlientHandler создаётся для каждого клиента
-    public ClientHandler(String login, Socket socket, ChatServer chatServer) throws IOException {
+    public ClientHandler(String login, Socket socket, ChatServer chatServer, ExecutorService executorService) throws IOException {
         this.login = login;
         this.socket = socket;
         this.in = new DataInputStream(socket.getInputStream());
         this.out = new DataOutputStream(socket.getOutputStream());
         this.chatServer = chatServer;
+        this.executorService = executorService;
 
 
-        executorService.execute(new Runnable() {//поток для обработки входящих на сервер сообщений
+        this.executorService.submit(new Runnable() {//поток для обработки входящих на сервер сообщений
         //this.handleThread = new Thread(new Runnable() {//поток для обработки входящих на сервер сообщений
-
+         //   currentThread
             @Override
             public void run() {
                 while (!Thread.currentThread().isInterrupted()) {
@@ -62,7 +58,6 @@ public class ClientHandler {
                             System.out.println("Показываю сообщение о занятости логина");
                         } */else if (msg != null) {
                             chatServer.sendMessage(message);//userTo,userFrom,text
-                           // historyMessage.writeMessage(message.getCreated(),message.getUserFrom(),message.getUserTo(),message.getText());
 
                         }
                     } catch (IOException ex) {
@@ -72,7 +67,7 @@ public class ClientHandler {
                 }
             }
         });
-        countCurrentThread++;
+
         System.out.printf("Всего открыто потоков: %s из %s воможных",countCurrentThread, MAX_THREAD);
         this.chatServer = chatServer;
 
