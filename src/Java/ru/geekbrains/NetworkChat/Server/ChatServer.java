@@ -6,6 +6,7 @@ import Java.ru.geekbrains.NetworkChat.Client.TextMessage;
 import Java.ru.geekbrains.NetworkChat.Server.EventLog.EventLogJdbcImpl;
 import Java.ru.geekbrains.NetworkChat.Server.Exception.AuthException;
 import Java.ru.geekbrains.NetworkChat.Server.Exception.LoginNonExistent;
+import Java.ru.geekbrains.NetworkChat.Server.Exception.RegLoginException;
 import Java.ru.geekbrains.NetworkChat.Server.Persistance.UserRepository;
 
 
@@ -34,7 +35,7 @@ public class ChatServer {
     //синхронизированная Мап хранит логин и всего пользователя. Синхронизация необходима для доступа к МАПе из всех потоков
     public static Map<String, ClientHandler> clientHandlerMap = Collections.synchronizedMap(new HashMap<>());
     public static final Logger logger = Logger.getLogger(ChatServer.class.getName());
-
+    public static Connection con;
     public static volatile int countCurrentThread = 0;
     public final static int MAX_THREAD = 2;
     final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(100);
@@ -48,48 +49,32 @@ public class ChatServer {
     });
 
 
-    public static void main(String[] args)  {
+    public static void main(String[] args) throws SQLException {
 
         //LogManager.getLogManager().readConfiguration(ChatServer.class.getClassLoader()
         //        .getResourceAsStream("jul.properties"));
         connectionMySQL();
+        eventLogJdbc=new EventLogJdbcImpl(con);
+        logger.setLevel(Level.FINE);
+        logger.getParent().setLevel(Level.FINE);
+        logger.getParent().getHandlers()[0].setLevel(Level.FINE);
 
-        logger.setLevel(Level.WARNING);
-        logger.getParent().setLevel(Level.WARNING);
-        logger.getParent().getHandlers()[0].setLevel(Level.WARNING);
         logger.addHandler(new Handler() {
             @Override
             public void publish(LogRecord record) {
                 eventLogJdbc.insertLog(record);
-                System.out.println("Прошла запись в базу");
             }
 
             @Override
             public void flush() {
                 flush();
-                System.out.println("Прошёл flush при записи лога в базу");
             }
 
             @Override
             public void close() throws SecurityException {
-
             }
-
-            
         });
-
-/*
-        try {
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/network_chat?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Novosibirsk", "root", "localhost_1");
-
-            userRepository = new UserRepository(con);
-            authService = new AuthServiceJdbcImpl(userRepository);
-           // System.out.println("подключился к БД");
-            logger.info("Server подключился к БД");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return;
-        }*/
+        logger.info("Начало логирования");
         ChatServer chatServer = new ChatServer();
         chatServer.start(7777);
 
@@ -98,14 +83,14 @@ public class ChatServer {
     private static void connectionMySQL() {
         UserRepository userRepository;
         try {
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/network_chat?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Novosibirsk", "root", "localhost_1");
+             con = DriverManager.getConnection("jdbc:mysql://localhost:3306/network_chat?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Asia/Novosibirsk", "root", "localhost_1");
 
             userRepository = new UserRepository(con);
             authService = new AuthServiceJdbcImpl(userRepository);
-            // System.out.println("подключился к БД");
-            //logger.info("Server подключился к БД");
+            logger.fine("Server подключился к БД");
         } catch (SQLException e) {
-            e.printStackTrace();
+
+            logger.fine(e.getMessage());
             return;
         }
     }
@@ -124,7 +109,7 @@ public class ChatServer {
                     authMessage = in.readUTF();
                     user = checkAuthentication(authMessage);
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    logger.fine(ex.getMessage());
                 } catch (AuthException ex) {//Если авторизация не прошла, сообщаем об этом и закрываем сокет
                     out.writeUTF(AUTH_FAIL_RESPONSE);
                     out.flush();
@@ -139,8 +124,13 @@ public class ChatServer {
                 }
                 boolean chResourse = checkResourceThread();
                 if (authMessage.substring(0, 4).equals("/reg") && chResourse) {
-                    authService.registrationUser(user);
-                    //System.out.println("Зарегистрирован пользователь: " + user.getLogin());
+                    try {
+                        authService.registrationUser(user);
+                    } catch (RegLoginException e) {
+                        logger.fine(e.getMessage());
+                        out.writeUTF(REG_FAIL_RESPONSE);
+                        continue;
+                    }
                     logger.info("Зарегистрирован пользователь: " + user.getLogin());
                     out.writeUTF(REG_SUCCESS_RESPONSE);
                     out.flush();
@@ -151,7 +141,8 @@ public class ChatServer {
                     try {
                         if (user != null && authService.authUser(user) && chResourse) {
                             //если авторизация прошла, то записываем данные пользователя в МАПу
-                            System.out.println("Подключился пользователь " + user.getLogin());
+                            //System.out.println("Подключился пользователь " + user.getLogin());
+                            logger.info("Подключился пользователь " + user.getLogin());
                             subscribe(user.getLogin(), socket);
                             //mon.wait();
                             out.writeUTF(AUTH_SUCCESS_RESPONSE);
@@ -201,15 +192,19 @@ public class ChatServer {
             throw new AuthException();
         }
         if (ChatServer.loginIsBusy(authParts[1])) {
-            logger.fine("Указанное имя уже занято - " + authParts[1]);
+            logger.warning("Указанное имя уже занято - " + authParts[1]);
             throw new LoginException("Указанное имя уже занято");
         }
         return new User(-1, authParts[1], authParts[2]);//передаём данные введённого пользователя
     }
 
-    private void sendUserConnectedMessage(String login) throws IOException {
+    private void sendUserConnectedMessage(String login){//throws IOException {
         for (ClientHandler clientHandler : clientHandlerMap.values()) {
-            clientHandler.sendConnectedMessage(login);
+            try {
+                clientHandler.sendConnectedMessage(login);
+            } catch (IOException e) {
+                logger.fine(e.getMessage());
+            }
             //логин не может совпадать, т.к. новый пользователь ещё не добавлен в МАПу
             //отправляю сообщение о вновь подключившемся
         }
@@ -229,7 +224,8 @@ public class ChatServer {
         if (userToClientHandler != null) {
             userToClientHandler.sendMessage(msg.getUserTo(), msg.getUserFrom(), msg.getText());//сервер отправляет уже разбитое сообщение
         } else {
-            System.out.printf("User %s not connected%n", msg.getUserTo());
+            //System.out.printf("User %s not connected%n", msg.getUserTo());
+            logger.warning(String.format("Пользователь %s не подключен",msg.getUserTo()));
         }
     }
 

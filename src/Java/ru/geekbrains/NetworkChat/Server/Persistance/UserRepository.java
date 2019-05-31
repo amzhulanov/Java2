@@ -5,6 +5,8 @@ import Java.ru.geekbrains.NetworkChat.Server.User;
 import java.sql.*;
 import java.util.*;
 
+import static Java.ru.geekbrains.NetworkChat.Server.ChatServer.logger;
+
 public class UserRepository {
     private final Connection conn;
     private Statement statmt = null;
@@ -23,17 +25,23 @@ public class UserRepository {
         //statmt.close();
     }
 
-    public void insert(User user) { //добавляю нового пользователя
+    public boolean insert(User user)  { //добавляю нового пользователя
         try {
             PreparedStatement preparedStatement=conn.prepareStatement("insert into users (login,password) values(?,?)");
             preparedStatement.setString(1,user.getLogin());
             preparedStatement.setString(2,user.getPassword());
+
             preparedStatement.execute();
             preparedStatement.close();
+            return true;
         } catch (SQLException e) {
-            //System.out.println("Пользователь не добавлен");
-            e.printStackTrace();
+            logger.fine(e.getMessage());
+            return false;
         }
+
+
+
+
     }
 
     public User findByLogin(String login)  {//ищу пользователя в БД по логину

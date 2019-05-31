@@ -19,7 +19,7 @@ public class EventLogJdbcImpl implements EventLog{
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        statmt.execute("CREATE TABLE if not exists log (id int primary key, type_msg varchar(25), datetime_msg datetime, text text_msg);");
+        statmt.execute("CREATE TABLE if not exists log (id int primary key, type_msg varchar(25), datetime_msg datetime, text_msg text)");
         logger.fine("CREATE TABLE log");
     }
 
@@ -28,8 +28,7 @@ public class EventLogJdbcImpl implements EventLog{
         try {
             PreparedStatement preparedStatement=conn.prepareStatement("insert into log (type_msg,datetime_msg,text_msg) values(?,?,?)");
             preparedStatement.setString(1,record.getLevel().getName());
-            preparedStatement.setString(2,String.format("%tF %tT",record.getMillis()));
-            //preparedStatement.setTimestamp(1,LocalDateTime.parse(str, dateTimeFormatter), Calendar.getInstance(TimeZone.getTimeZone("UTC")));
+            preparedStatement.setString(2,String.format("%tF %tT",record.getMillis(),record.getMillis()));
             preparedStatement.setString(3,record.getMessage());
             preparedStatement.execute();
             preparedStatement.close();

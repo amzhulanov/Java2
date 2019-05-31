@@ -1,6 +1,7 @@
 package Java.ru.geekbrains.NetworkChat.Server.Authorization;
 
 import Java.ru.geekbrains.NetworkChat.Server.Exception.LoginNonExistent;
+import Java.ru.geekbrains.NetworkChat.Server.Exception.RegLoginException;
 import Java.ru.geekbrains.NetworkChat.Server.Persistance.UserRepository;
 import Java.ru.geekbrains.NetworkChat.Server.User;
 
@@ -27,8 +28,11 @@ public class AuthServiceJdbcImpl implements AuthService {
 
 
     @Override
-    public void registrationUser(User user)  {
-        userRepository.insert(user);
+    public void registrationUser(User user) throws RegLoginException {
+        if (!userRepository.insert(user)) {
+            throw new RegLoginException();
+        }
+
      /*   if (userRepository.findByLogin(login)==null){ //имени не должно быть в базе
                userRepository.insert(login, password);
                     return true;
